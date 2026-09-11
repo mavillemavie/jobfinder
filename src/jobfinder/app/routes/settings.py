@@ -78,8 +78,9 @@ def page(
     flash: str | None = None,
 ):  # noqa: ANN201
     health = {h.adapter: h for h in session.scalars(select(AdapterHealth))}
-    master_text = master_resume_path().read_text() if master_resume_path().exists() else ""
-    cover_text = cover_letter_path().read_text() if cover_letter_path().exists() else ""
+    master_p, cover_p = master_resume_path(), cover_letter_path()
+    master_text = master_p.read_text(encoding="utf-8") if master_p.exists() else ""
+    cover_text = cover_p.read_text(encoding="utf-8") if cover_p.exists() else ""
     keys = {name: settings.has(*KEYS_BY_SOURCE.get(name, ())) for name in SOURCE_NAMES}
     gaps: list[dict] = []
     if master_exists():

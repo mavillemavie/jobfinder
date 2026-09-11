@@ -165,7 +165,7 @@ def load_profile(path: Path | None = None) -> Profile:
             path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(paths.example_profile_path(), path)
             log.warning("created %s from %s", path, paths.example_profile_path().name)
-    with path.open() as f:
+    with path.open(encoding="utf-8") as f:
         data = _yaml().load(f)
     return Profile.model_validate(data)
 
@@ -174,10 +174,10 @@ def save_profile(profile: Profile, path: Path | None = None) -> None:
     """Write back into the existing document so comments survive."""
     path = path or paths.config_path()
     y = _yaml()
-    with path.open() as f:
+    with path.open(encoding="utf-8") as f:
         doc = y.load(f)
     _merge_into(doc, profile.model_dump(mode="json"))
-    with path.open("w") as f:
+    with path.open("w", encoding="utf-8") as f:
         y.dump(doc, f)
 
 

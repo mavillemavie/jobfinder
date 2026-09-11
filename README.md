@@ -13,8 +13,10 @@ and `.env`, none of which are tracked. Research notes on the job-board and conta
 
 ## What you need
 
-- **Linux or macOS** (Windows: use WSL). `run.sh` / `stop.sh` and the systemd unit are Linux; on macOS
-  start it with `uv run jobfinder serve`.
+- **Linux, macOS or Windows.** `run.sh` / `stop.sh` are Linux (they use `ss` and `xdg-open`),
+  `run.ps1` / `stop.ps1` are Windows (PowerShell; if scripts are blocked, run once
+  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`); `uv run jobfinder serve` works everywhere,
+  macOS included. The test suite runs on both Linux and Windows in CI.
 - **[uv](https://docs.astral.sh/uv/)** — it installs Python 3.12+ and every dependency for you.
 - **An LLM**, one of:
   - **Claude Code** (default, `LLM_PROVIDER=claude_code`): `npm install -g @anthropic-ai/claude-code`,
@@ -76,7 +78,8 @@ matches; 20–40 minutes the first time, capped by `scoring.max_llm_scored_per_r
 
 **5. Look at it.**
 
-    ./run.sh            # Linux: starts the dashboard + scheduler in the background, opens the browser
+    ./run.sh            # Linux: dashboard + scheduler in the background, opens the browser
+    .\run.ps1           # Windows (PowerShell), same thing
     uv run jobfinder serve            # any OS, foreground — http://localhost:3838
 
 Inbox shows every match sorted by fit. From a Job page: *Generate docs* (tailored résumé + cover
@@ -134,6 +137,8 @@ should point at.
 
 ## Autostart
 
+**Linux (systemd user unit):**
+
     mkdir -p ~/.config/systemd/user
     cp docs/systemd/jobfinder.service ~/.config/systemd/user/   # then edit WorkingDirectory + PATH
     systemctl --user daemon-reload
@@ -145,6 +150,19 @@ Logs: `journalctl --user -u jobfinder -f` and `data/logs/jobfinder.log` (rotatin
 The unit pins `PATH` to include the directory where the `claude` CLI lives (under nvm if you installed
 Node that way); if you change Node versions, update that line and `systemctl --user daemon-reload`.
 If the machine is offline at scan or digest time, an hourly catch-up job runs them once it is back.
+
+**Windows (Task Scheduler), from an elevated PowerShell in the repo folder:**
+
+    $act = New-ScheduledTaskAction -Execute "uv" -Argument "run jobfinder serve" -WorkingDirectory (Get-Location)
+    $trg = New-ScheduledTaskTrigger -AtLogOn
+    Register-ScheduledTask -TaskName "jobfinder" -Action $act -Trigger $trg -Description "jobfinder dashboard + scheduler"
+
+`uv` must be on the PATH the task sees (the default installer puts it there). Stop it with
+`Stop-ScheduledTask jobfinder`, remove it with `Unregister-ScheduledTask jobfinder`. Logs go to
+`data\logs\jobfinder.log`. The `claude` CLI installs with `npm install -g @anthropic-ai/claude-code`
+and needs Git for Windows; run `claude` once from a terminal to log in.
+
+**macOS:** a `launchd` agent with the same command, or just leave `./run.sh` running.
 
 ## How it works
 

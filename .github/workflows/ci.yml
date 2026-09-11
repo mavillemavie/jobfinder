@@ -6,7 +6,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -15,3 +19,15 @@ jobs:
       - run: uv sync --frozen
       - run: uv run ruff check src tests
       - run: uv run pytest -q
+      # First-run smoke on a clean checkout: schema, profile from the example, health report.
+      - run: uv run jobfinder db upgrade
+      - run: uv run jobfinder doctor
+      - if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          foreach ($f in "run.ps1", "stop.ps1") {
+            $t = $null; $e = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$t, [ref]$e) | Out-Null
+            if ($e) { $e; exit 1 }
+          }
+          .\stop.ps1

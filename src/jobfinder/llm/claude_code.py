@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import time
 from collections.abc import Callable
@@ -55,8 +56,12 @@ def parse_envelope(stdout: str) -> dict[str, Any]:
 def _default_runner(cmd: list[str], stdin: str, timeout: int) -> subprocess.CompletedProcess:
     workdir = paths.llm_workdir()
     workdir.mkdir(parents=True, exist_ok=True)
+    # Windows: npm installs the CLI as claude.cmd, and CreateProcess only finds .exe by bare
+    # name — resolve through PATH/PATHEXT first. No-op where the binary is a plain executable.
+    resolved = shutil.which(cmd[0]) or cmd[0]
     return subprocess.run(
-        cmd, input=stdin, capture_output=True, text=True, timeout=timeout, cwd=workdir, check=False
+        [resolved, *cmd[1:]], input=stdin, capture_output=True, text=True, encoding="utf-8",
+        timeout=timeout, cwd=workdir, check=False,
     )
 
 

@@ -44,8 +44,19 @@ def _no_network(request, monkeypatch):
     def _blocked(*args, **kwargs):
         raise RuntimeError("network access blocked in the default test suite")
 
+    # Loopback stays open: on Windows, Python emulates socket.socketpair() with a real
+    # 127.0.0.1 connect, and asyncio (hence Starlette's TestClient) needs one per loop.
+    # Nothing under test listens locally, so a loopback dial can only be that emulation.
+    orig_connect = socket.socket.connect
+
+    def _connect(self, address, *args, **kwargs):
+        host = address[0] if isinstance(address, tuple) else None
+        if host in ("127.0.0.1", "::1"):
+            return orig_connect(self, address, *args, **kwargs)
+        _blocked()
+
     monkeypatch.setattr(socket, "create_connection", _blocked)
-    monkeypatch.setattr(socket.socket, "connect", _blocked)
+    monkeypatch.setattr(socket.socket, "connect", _connect)
     # DNS is a network call of its own: a test that leaks a real hostname would otherwise
     # stall on resolution before ever reaching connect().
     monkeypatch.setattr(socket, "getaddrinfo", _blocked)
