@@ -11,39 +11,108 @@ as-is so others can adapt it: everything about *you* lives in `config/profile.ya
 and `.env`, none of which are tracked. Research notes on the job-board and contact APIs are in
 `docs/research/`; keys and free tiers in `docs/SETUP-KEYS.md`.
 
+## What you need
+
+- **Linux or macOS** (Windows: use WSL). `run.sh` / `stop.sh` and the systemd unit are Linux; on macOS
+  start it with `uv run jobfinder serve`.
+- **[uv](https://docs.astral.sh/uv/)** — it installs Python 3.12+ and every dependency for you.
+- **An LLM**, one of:
+  - **Claude Code** (default, `LLM_PROVIDER=claude_code`): `npm install -g @anthropic-ai/claude-code`,
+    then `claude` once to log in. Scoring, ingest, tailoring and drafts run through `claude -p` on your
+    subscription; no API key.
+  - **Anthropic API** (`LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`), pay per token.
+  - **LM Studio** (`LLM_PROVIDER=lmstudio`), a local model; quality of scoring and tailoring drops.
+- **A Gmail App Password** for the morning email (two minutes, `docs/SETUP-KEYS.md`). Without it the
+  dashboard still shows everything; only the email is missing.
+- **Optional, all free tiers:** job-board keys (Adzuna, Reed, JSearch, Jooble, the two Fantastic Jobs
+  feeds via RapidAPI) and contact keys (Hunter, Serper, Apollo). The pipeline runs without any of
+  them on the keyless sources (Job Bank, Remotive, WeWorkRemotely, employer ATS boards); each key
+  adds coverage. `docs/SETUP-KEYS.md` has sign-up links, free-tier sizes and the order of value.
+
+## Quickstart: from clone to first brief
+
+    git clone https://github.com/mavillemavie/jobfinder.git && cd jobfinder
+    uv sync                                   # Python + dependencies, nothing global
+    cp .env.example .env                      # then paste your keys (see docs/SETUP-KEYS.md)
+    uv run jobfinder db upgrade               # creates data/jobfinder.db
+
+**1. Tell it who you are.** The first command that needs it copies `config/profile.example.yaml` to
+`config/profile.yaml` (yours, gitignored). Edit it by hand now or from the dashboard later:
+
+- `titles.clusters` and `titles.search_keywords` — the roles you want, in the words job boards use.
+- `locations` — in priority order; a posting passes if any enabled entry matches.
+- `scoring.candidate_note` — one paragraph the scorer reads about your situation (where you can
+  work, languages, anything a posting might wrongly penalise you for).
+- `scan.run_at`, `digest.send_at`, timezone.
+- `documents.file_name_pattern` — e.g. `"Jane-Doe-{kind}-{company}"`.
+
+**2. Give it your résumé.** Drop your résumé and cover letter as `.docx` into `input/`, then:
+
+    uv run jobfinder ingest --resume <your-resume.docx> --cover <your-cover-letter.docx>
+
+This is one strong-tier LLM call that turns them into `master/resume.yaml` and
+`master/cover-letter.md` — the *master*: the only source of truth for every tailored document (the
+tailor may never claim anything that is not in it). Open both files and fix anything the parse got
+wrong; you can also edit them any time from the Settings page.
+
+**3. Check the wiring.**
+
+    uv run jobfinder doctor
+
+Green on `database` and `claude CLI` (or your provider) is the requirement; missing keys are
+listed with the doc to read. The last line says whether the dashboard port is free.
+
+**4. First scan.** Start with discovery only to see what the boards return for your profile:
+
+    uv run jobfinder scan --no-llm
+    uv run jobfinder postings --status new --limit 20
+    uv run jobfinder postings --status prefiltered_out --limit 20   # why things were dropped
+
+Tune `titles`, `locations` and `scoring.min_keyword_overlap` until the `new` list looks like your
+market, then run the full pipeline (discovery → hydration → LLM scoring → contact discovery for
+matches; 20–40 minutes the first time, capped by `scoring.max_llm_scored_per_run`):
+
+    uv run jobfinder scan
+
+**5. Look at it.**
+
+    ./run.sh            # Linux: starts the dashboard + scheduler in the background, opens the browser
+    uv run jobfinder serve            # any OS, foreground — http://localhost:3838
+
+Inbox shows every match sorted by fit. From a Job page: *Generate docs* (tailored résumé + cover
+letter, .docx and .pdf, with a truth check against your master), *Find contact*, *Write drafts*,
+*Compose in Gmail*.
+
+**6. Get the brief.** With `GMAIL_*` set:
+
+    uv run jobfinder digest --dry-run         # prints what would be sent
+    uv run jobfinder digest                   # sends it
+
+From here on it runs itself: while `serve` (or `run.sh`) is up, the in-process scheduler runs the scan
+at `scan.run_at` and sends the digest at `digest.send_at` (both in the profile's timezone). If the
+machine was offline at either time, an hourly catch-up job runs them once it is back. For always-on
+use, install the systemd unit (below) so it survives reboots.
+
 ## Daily use
 
-- **Morning:** read the digest (07:00 America/Montreal). Each match links to its Job page.
+- **Morning:** read the digest. Each match links to its Job page.
 - **Job page:** *Generate docs* → download the .docx/.pdf → apply on the posting site → *Write drafts*
   → *Compose in Gmail* (opens a prefilled tab; you press send) → log the call or email under
   *Activity* → move the stage. *Find contact* re-runs contact discovery; *Re-score* re-runs the LLM fit.
 - **Inbox:** every match, sorted by fit; filter by score, location, title; Shortlist / Dismiss / Re-score
-  per row.
+  per row. Shortlist starts contact discovery for that posting.
 - **Pipeline:** the board (`new → shortlisted → docs_ready → applied → contacted → interviewing →
   offer → closed`). Logging a call or email on an `applied` job moves it to `contacted` automatically.
+  Closing a job as `rejected` also dismisses its same-title twins from that company.
 - **Settings:** title clusters, exclusions, seniority, locations, scoring knobs, sources, budget cap,
   schedule, master résumé + cover letter editors, adapter health, month-to-date spend, *Run scan now*,
   *Send digest now*.
 - **Runs:** every scan and digest with its stats and adapter errors.
 
-## Setup (once)
-
-    uv sync
-    cp .env.example .env              # fill keys per docs/SETUP-KEYS.md (all optional except Gmail for the digest)
-    # config/profile.yaml is created from config/profile.example.yaml on first run — edit it
-    # (titles, locations, schedule, candidate note) by hand or later from the Settings page
-    # drop your résumé + cover letter .docx into input/
-    uv run jobfinder ingest --resume <file.docx>   # explicit file when input/ holds several
-    uv run jobfinder doctor           # green on "database" is the only hard requirement
-    ./run.sh                          # opens http://localhost:3838
-
-The LLM defaults to your Claude subscription through the `claude` CLI (`LLM_PROVIDER=claude_code`),
-so install [Claude Code](https://claude.com/claude-code) and log in once; `anthropic` (API key) and
-`lmstudio` (local model) are the alternatives.
-
 The dashboard binds `dashboard.bind_host` (default loopback; `0.0.0.0` to reach it from a phone over
 Tailscale) and only answers clients in `dashboard.allowed_client_cidrs` (loopback + Tailscale
-`100.64.0.0/10`); everything else gets 403.
+`100.64.0.0/10`); everything else gets 403. Set `dashboard.public_base_url` to what the digest links
+should point at.
 
 ## Commands
 
@@ -79,9 +148,10 @@ If the machine is offline at scan or digest time, an hourly catch-up job runs th
 
 ## How it works
 
-- **Discovery** (`jobfinder.discovery`): free adapters (Job Bank RSS, Remotive, WeWorkRemotely, LinkedIn
-  guest search, ATS boards) plus keyed ones (Adzuna, Reed, Jooble, JSearch) behind per-adapter daily caps
-  and cooldowns; postings are normalised, deduped, prefiltered on title cluster / exclusions / seniority /
+- **Discovery** (`jobfinder.discovery`): keyless adapters (Job Bank RSS, Remotive, WeWorkRemotely,
+  employer ATS boards; a LinkedIn guest-page adapter exists but is off by default) plus keyed ones
+  (Adzuna, Reed, Jooble, JSearch, Fantastic Jobs' LinkedIn index and Active Jobs DB) behind
+  per-adapter daily caps and cooldowns; postings are normalised, deduped, prefiltered on title cluster / exclusions / seniority /
   location / keyword overlap, and hydrated with the full text. Knobs: `titles`, `locations`,
   `scoring.max_posting_age_days`, `min_keyword_overlap`, `max_hydrate_per_run`, `sources.*`.
 - **Scoring** (`jobfinder.scoring`): a compact résumé summary + the posting go to the fast LLM tier
