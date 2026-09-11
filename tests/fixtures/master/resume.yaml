@@ -1,0 +1,30 @@
+contact: {name: Jordan Test, email: jordan@example.com, phone: "+1 514 555 0100", location: "Montreal, QC", linkedin: null, website: null}
+summary: Reporting analyst with 8 years turning operational data into decisions.
+skills:
+  - {category: Analytics, items: [SQL, Power BI, Tableau, Excel, DAX]}
+  - {category: Data, items: [Python, pandas, ETL, data modeling]}
+experience:
+  - company: Acme Logistics
+    title: Reporting Analyst
+    location: Montreal, QC
+    start: "2019-03"
+    end: Present
+    bullets:
+      - Built 40+ Power BI dashboards used by 200 managers, cutting monthly reporting time by 60%.
+      - Designed SQL data marts feeding executive KPIs.
+    tags: [power bi, sql, kpi]
+  - company: Beta Retail
+    title: Data Analyst
+    location: Laval, QC
+    start: "2016-01"
+    end: "2019-02"
+    bullets:
+      - Automated weekly sales reports in Python, saving 10 hours per week.
+    tags: [python, reporting]
+education:
+  - {institution: Université de Montréal, credential: B.Sc., field: Statistics, year: "2015"}
+certifications: [Microsoft Certified Power BI Data Analyst Associate]
+languages:
+  - {name: French, level: native}
+  - {name: English, level: fluent}
+projects: []

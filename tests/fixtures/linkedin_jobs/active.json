@@ -1,0 +1,196 @@
+[
+ {
+  "id": 2350256022,
+  "linkedin_id": 4462676911,
+  "title": "Data Analyst, New Grad",
+  "organization": "Jobright.ai",
+  "organization_url": "https://www.linkedin.com/company/jobright-ai",
+  "url": "https://uk.linkedin.com/jobs/view/data-analyst-new-grad-at-jobright-ai-4462676911",
+  "date_posted": "2026-09-06T20:29:30.485",
+  "date_created": "2026-09-06T20:32:30.553235",
+  "description_text": "Jobright is your personal AI job search agent that transforms the way you do job search from solo, time-consuming efforts to a fast, expert-guided journey, simplifying every job search step and accelerating your route to the best job outcomes. As a Data Analyst, New Grad, you will work with a distributed team to transform product, job market, and user data into insights that improve the job search",
+  "locations": [
+   {
+    "@type": "Place",
+    "address": {
+     "@type": "PostalAddress",
+     "addressRegion": "",
+     "addressCountry": "",
+     "addressLocality": "United Kingdom"
+    }
+   }
+  ],
+  "locations_derived": [
+   "United Kingdom"
+  ],
+  "cities_derived": null,
+  "regions_derived": null,
+  "countries_derived": [
+   "United Kingdom"
+  ],
+  "ai_work_arrangement": "Remote OK",
+  "ai_remote_location": [
+   "United Kingdom"
+  ],
+  "seniority": "Entry level",
+  "salary": null,
+  "employment_type": [
+   "FULL_TIME"
+  ],
+  "org_linkedin_recruitment_agency_derived": true,
+  "source": "linkedin",
+  "source_domain": "uk.linkedin.com",
+  "direct_apply": false,
+  "ai_hiring_manager_name": null,
+  "ai_hiring_manager_email_address": null,
+  "ai_visa_sponsorship": false
+ },
+ {
+  "id": 2350256015,
+  "linkedin_id": 4461864118,
+  "title": "Lead Data Analyst (Lead I - Data Engineering)",
+  "organization": "UST",
+  "organization_url": "https://www.linkedin.com/company/ustglobal",
+  "url": "https://uk.linkedin.com/jobs/view/lead-data-analyst-lead-i-data-engineering-at-ust-4461864118",
+  "date_posted": "2026-09-06T20:28:56",
+  "date_created": "2026-09-06T20:32:30.224263",
+  "description_text": "Role Description\n\nLocation: Leeds, (Hybrid- 3 days working from onsite-Mandatory)\n\nImmediate start\n\nPermanent/ Contract inside IR35/ Fixed term contract\n\nWe are seeking an experienced Lead Data Analyst to join our client's Data team. This role combines advanced analytical capabilities with stakeholder engagement and data governance expertise. You will work closely with business stakeholders, Data ",
+  "locations": [
+   {
+    "@type": "Place",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "GB",
+     "addressLocality": "Leeds",
+     "addressRegion": null,
+     "streetAddress": null
+    },
+    "latitude": 53.80046,
+    "longitude": -1.5487279
+   }
+  ],
+  "locations_derived": [
+   "Leeds, England, United Kingdom"
+  ],
+  "cities_derived": [
+   "Leeds"
+  ],
+  "regions_derived": [
+   "England"
+  ],
+  "countries_derived": [
+   "United Kingdom"
+  ],
+  "ai_work_arrangement": "Hybrid",
+  "ai_remote_location": null,
+  "seniority": "Mid-Senior level",
+  "salary": null,
+  "employment_type": [
+   "FULL_TIME"
+  ],
+  "org_linkedin_recruitment_agency_derived": false,
+  "source": "linkedin",
+  "source_domain": "uk.linkedin.com",
+  "direct_apply": false,
+  "ai_hiring_manager_name": null,
+  "ai_hiring_manager_email_address": null,
+  "ai_visa_sponsorship": false
+ },
+ {
+  "id": 2350205708,
+  "linkedin_id": 4462694688,
+  "title": "Data Analyst, AI Agent Analytics \u2014 New Grad",
+  "organization": "Jobright.ai",
+  "organization_url": "https://www.linkedin.com/company/jobright-ai",
+  "url": "https://ca.linkedin.com/jobs/view/data-analyst-ai-agent-analytics-%E2%80%94-new-grad-at-jobright-ai-4462694688",
+  "date_posted": "2026-09-06T18:16:42.623",
+  "date_created": "2026-09-06T18:35:42.741991",
+  "description_text": "Jobright is your personal AI job search agent that transforms the way you do job search from solo, time-consuming efforts to a fast, expert-guided journey, simplifying every job search step and accelerating your route to the best job outcomes. As a New Grad Data Analyst focused on AI Agent Analytics, you will measure agent quality, understand user interactions, and turn complex behavioral data int",
+  "locations": [
+   {
+    "@type": "Place",
+    "address": {
+     "@type": "PostalAddress",
+     "addressRegion": "",
+     "addressCountry": "",
+     "addressLocality": "Canada"
+    }
+   }
+  ],
+  "locations_derived": [
+   "Canada"
+  ],
+  "cities_derived": null,
+  "regions_derived": null,
+  "countries_derived": [
+   "Canada"
+  ],
+  "ai_work_arrangement": "Remote OK",
+  "ai_remote_location": [
+   "Canada"
+  ],
+  "seniority": "Entry level",
+  "salary": null,
+  "employment_type": [
+   "FULL_TIME"
+  ],
+  "org_linkedin_recruitment_agency_derived": true,
+  "source": "linkedin",
+  "source_domain": "ca.linkedin.com",
+  "direct_apply": false,
+  "ai_hiring_manager_name": null,
+  "ai_hiring_manager_email_address": null,
+  "ai_visa_sponsorship": false
+ },
+ {
+  "id": 1,
+  "linkedin_id": 1,
+  "title": "Data Analyst (no link)",
+  "organization": "UST",
+  "organization_url": "https://www.linkedin.com/company/ustglobal",
+  "url": null,
+  "date_posted": "2026-09-06T20:28:56",
+  "date_created": "2026-09-06T20:32:30.224263",
+  "description_text": "Role Description\n\nLocation: Leeds, (Hybrid- 3 days working from onsite-Mandatory)\n\nImmediate start\n\nPermanent/ Contract inside IR35/ Fixed term contract\n\nWe are seeking an experienced Lead Data Analyst to join our client's Data team. This role combines advanced analytical capabilities with stakeholder engagement and data governance expertise. You will work closely with business stakeholders, Data ",
+  "locations": [
+   {
+    "@type": "Place",
+    "address": {
+     "@type": "PostalAddress",
+     "addressCountry": "GB",
+     "addressLocality": "Leeds",
+     "addressRegion": null,
+     "streetAddress": null
+    },
+    "latitude": 53.80046,
+    "longitude": -1.5487279
+   }
+  ],
+  "locations_derived": [
+   "Leeds, England, United Kingdom"
+  ],
+  "cities_derived": [
+   "Leeds"
+  ],
+  "regions_derived": [
+   "England"
+  ],
+  "countries_derived": [
+   "United Kingdom"
+  ],
+  "ai_work_arrangement": "Hybrid",
+  "ai_remote_location": null,
+  "seniority": "Mid-Senior level",
+  "salary": null,
+  "employment_type": [
+   "FULL_TIME"
+  ],
+  "org_linkedin_recruitment_agency_derived": false,
+  "source": "linkedin",
+  "source_domain": "uk.linkedin.com",
+  "direct_apply": false,
+  "ai_hiring_manager_name": null,
+  "ai_hiring_manager_email_address": null,
+  "ai_visa_sponsorship": false
+ }
+]

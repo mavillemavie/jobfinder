@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["email_subject", "email_body", "call_script"],
+  "properties": {
+    "email_subject": {"type": "string", "maxLength": 120},
+    "email_body": {"type": "string", "maxLength": 1200},
+    "call_script": {"type": "string", "maxLength": 1500}
+  }
+}

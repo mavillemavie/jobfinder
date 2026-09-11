@@ -1,0 +1,12 @@
+<h2>Documents</h2>
+{% if documents %}<table><tr><th>Kind</th><th>Format</th><th>Lang</th><th>Status</th><th>ATS</th><th></th></tr>
+{% for d in documents %}<tr><td>{{ d.kind }}</td><td>{{ d.format }}</td><td>{{ d.language }}</td>
+<td class="{{ 'ok' if d.status == 'ready' else 'warn' }}">{{ d.status }}</td><td>{{ d.ats_score or '' }}</td>
+<td><a href="/jobs/{{ p.id }}/files/{{ d.id }}">{{ d.path.rsplit('/', 1)[-1] }}</a></td></tr>{% endfor %}</table>
+{% set r = documents[0] %}
+{% if r.ats_report %}<p class="muted">Missing keywords: {{ r.ats_report.keyword_missing|join(', ') or 'none' }} · gaps: {{ r.ats_report.gaps|join(', ') or 'none' }} · pages: {{ r.ats_report.pages }}</p>{% endif %}
+{% if r.truth_check and not r.truth_check.ok %}<p class="warn">Truth check: {{ (r.truth_check.deterministic + r.truth_check.llm)|join('; ') }}</p>{% endif %}
+{% if r.change_log %}<details><summary>Change log</summary><ul>{% for c in r.change_log %}<li>{{ c }}</li>{% endfor %}</ul></details>{% endif %}
+{% else %}<p class="muted">No documents yet.</p>{% endif %}
+<button class="primary" hx-post="/jobs/{{ p.id }}/tailor" hx-target="#documents" hx-swap="innerHTML" hx-indicator="#docs-busy">{{ 'Regenerate docs' if documents else 'Generate docs' }}</button>
+<span id="docs-busy" class="htmx-indicator muted">working…</span>

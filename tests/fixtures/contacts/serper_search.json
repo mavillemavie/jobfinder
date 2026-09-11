@@ -1,0 +1,7 @@
+{"searchParameters": {"q": "\"Acme Logistics\" official site", "gl": "ca", "hl": "en"},
+ "knowledgeGraph": {"title": "Acme Logistics", "type": "Logistics company", "website": "https://acmelogistics.example",
+                    "attributes": {"Phone": "+1 514-555-0100", "Headquarters": "Montreal, QC"}},
+ "organic": [
+  {"title": "Acme Logistics | Third-party logistics in Quebec", "link": "https://acmelogistics.example/", "snippet": "Acme Logistics provides 3PL services across Canada.", "position": 1},
+  {"title": "Acme Logistics - LinkedIn", "link": "https://www.linkedin.com/company/acme-logistics", "snippet": "Acme Logistics | 2,341 followers", "position": 2}
+ ]}

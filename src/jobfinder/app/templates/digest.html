@@ -1,0 +1,12 @@
+<!doctype html><html><body style="font:15px/1.5 system-ui,sans-serif;color:#1b1b1b;max-width:680px;margin:0 auto;padding:16px">
+<h2 style="margin:0 0 6px">{{ subject }}</h2>
+<p style="color:#666">Since {{ d.since.strftime('%Y-%m-%d %H:%M') }} UTC · new postings: {{ d.counts.new_postings }} · last scan scored {{ d.counts.scored }}, {{ d.counts.scan_matches }} matched (≥ {{ d.counts.match_threshold }}) · spend MTD ${{ '%.2f'|format(d.spend_mtd) }} · <a href="{{ d.base_url }}/">open dashboard</a></p>
+<h3>Top matches</h3>
+{% if d.matches %}<ol>{% for m in d.matches %}<li><b>{{ m.score }}</b> — <a href="{{ m.url }}">{{ m.title }}</a> @ {{ m.company }} <span style="color:#666">{{ m.where }}</span><br><span style="color:#444">{{ m.summary }}</span></li>{% endfor %}</ol>{% else %}<p>None today.</p>{% endif %}
+<h3>Contacts found</h3>
+{% if d.contacts %}<ul>{% for c in d.contacts %}<li><a href="{{ c.url }}">{{ c.name }}</a> — {{ c.title }} @ {{ c.company }} {% if c.email %}· {{ c.email }}{% endif %}{% if c.phone %} · {{ c.phone }}{% endif %} <span style="color:#666">({{ (c.confidence*100)|round }}%)</span></li>{% endfor %}</ul>{% else %}<p>None today.</p>{% endif %}
+<h3>Documents ready</h3>
+{% if d.docs_ready %}<ul>{% for x in d.docs_ready %}<li><a href="{{ x.url }}">{{ x.title }} @ {{ x.company }}</a> · ATS {{ x.ats }}</li>{% endfor %}</ul>{% else %}<p>None today.</p>{% endif %}
+{% if d.errors %}<h3 style="color:#a83232">Adapter errors (last scan)</h3><ul>{% for k, v in d.errors.items() %}<li><b>{{ k }}</b>: {{ v }}</li>{% endfor %}</ul>{% endif %}
+<p style="color:#999;font-size:12px">Sources last scan: {{ d.counts.scan_sources }}</p>
+</body></html>

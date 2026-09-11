@@ -1,0 +1,90 @@
+# jobfinder target profile — copied to config/profile.yaml on first run, then edited in the
+# dashboard Settings page or by hand. config/profile.yaml is gitignored: it is yours.
+titles:
+  clusters:
+  - name: reporting-analytics
+    include: [data analyst, reporting analyst, business intelligence analyst, bi analyst, analytics specialist,
+        analytics analyst, insights analyst, data and reporting analyst, analyste de données, analyste données]
+  - name: bi-engineering
+    include: [bi developer, power bi developer, power bi analyst, tableau developer, analytics engineer, business
+        intelligence developer, data visualization developer]
+  - name: people-analytics             # add or replace clusters to match your own background
+    include: [people analytics, people analyst, hr analyst, hr data analyst, hris analyst, workforce analyst,
+        compensation analyst, talent analytics, analyste rh]
+  exclude_words: [vice president, "vp,", head of, director, intern, co-op, phd required]
+  seniority_allowed: [junior, intermediate, senior, lead, management, intern, unspecified]
+  search_keywords:                     # sent to the boards as-is; empty = derived from the clusters
+  - data analyst
+  - reporting analyst
+  - business intelligence analyst
+  - analytics engineer
+  - bi developer
+  - power bi developer
+  - people analytics
+  - hr analyst
+  - analyste de données
+
+locations:                       # a posting passes if ANY enabled entry matches; order = priority
+- {key: canada-any, enabled: true, country: CA}
+- {key: remote-from-canada, enabled: true, remote_scope: [canada, worldwide, americas]}
+- {key: montreal, enabled: true, country: CA, region: QC, cities: [Montreal, Montréal, Laval, Longueuil]}
+- {key: toronto, enabled: true, country: CA, region: ON, cities: [Toronto, Mississauga, Markham]}
+- {key: vancouver, enabled: true, country: CA, region: BC, cities: [Vancouver, Burnaby, Richmond, Surrey]}
+- {key: uk, enabled: false, country: GB}
+
+scoring:
+  match_threshold: 70            # >= this → match → digest (+ contact discovery if enabled)
+  max_llm_scored_per_run: 120
+  max_posting_age_days: 21       # older than this at first sight → dropped
+  min_keyword_overlap: 3         # prefilter: résumé skill terms found in the posting
+  max_hydrate_per_run: 100       # fetch full text for at most N snippet-only postings per run
+  hydrate_delay_s: 5             # seconds between hydration requests to the same host
+  candidate_note: "Based in Canada. Remote roles must allow working from Canada. Do not penalise
+    bilingual (English/French) postings."   # anything the scorer should know about your situation
+
+sources:                         # per-adapter switch and daily call cap (keys in .env)
+  adzuna: {enabled: true, daily_calls: 60, agencies: include}
+  reed: {enabled: false, daily_calls: 40, agencies: include}     # UK board
+  jooble: {enabled: true, daily_calls: 20, agencies: include}
+  jsearch: {enabled: true, daily_calls: 6, agencies: include}
+  jobbank_rss: {enabled: true, daily_calls: 40, agencies: include} # 2 calls per (keyword x location)
+  remotive: {enabled: true, agencies: include}
+  weworkremotely: {enabled: true, agencies: include}
+  linkedin_guest: {enabled: false, daily_calls: 12, agencies: include}  # off: guest pages throttle fast
+  ats_boards: {enabled: true, daily_calls: 60, agencies: include} # pooled across every ats_* adapter
+  linkedin_jobs:                 # Fantastic Jobs "LinkedIn Job Search API" (RAPIDAPI_KEY)
+    enabled: true
+    daily_calls: 1
+    page_size: 8
+    exclude_organizations: []
+    agencies: exclude
+  active_jobs_db:                # Fantastic Jobs "Active Jobs DB" (RAPIDAPI_KEY)
+    enabled: true
+    daily_calls: 1
+    page_size: 8
+    exclude_organizations: []
+    agencies: exclude
+
+contacts:
+  auto_run_on_match: false       # true = contact discovery for every new match at scan time
+  run_on_shortlist: true         # Shortlist in the inbox starts a contact run for that posting
+  monthly_usd_cap: 50
+  per_job_credit_cap: {apollo: 3, hunter: 2, websearch: 6}
+  stop_when: verified_email_and_any_phone
+  max_runs_per_scan: 5           # contact runs started automatically per scan
+  search_fallback: ddg           # ddg | none — web search when no SERPER_API_KEY
+  provider_limits:               # free-tier unit counters; set paid: true + usd_per_unit when subscribed
+    hunter: {monthly_units: 45, usd_per_unit: 0.0245, paid: false}   # 50 free/mo, keep 5 for retries
+    serper: {monthly_units: 300, usd_per_unit: 0.001, paid: false}   # 2,500 one-time grant
+    apollo: {monthly_units: 75, usd_per_unit: null, paid: false}     # $/credit unconfirmed → never paid
+
+scan: {run_at: "05:00", timezone: America/Montreal}   # a couple of hours before the digest
+digest: {enabled: true, send_at: "07:00", timezone: America/Montreal}
+dashboard:
+  port: 3838
+  bind_host: "127.0.0.1"         # "0.0.0.0" to reach it from other devices (e.g. over Tailscale)
+  public_base_url: "http://localhost:3838"   # what digest links point to
+  allowed_client_cidrs: ["127.0.0.0/8", "::1/128", "100.64.0.0/10"]   # loopback + Tailscale CGNAT
+documents:
+  languages: auto                # auto → French docs for French postings, English otherwise
+  file_name_pattern: "{kind}-{company}"      # e.g. "Jane-Doe-{kind}-{company}"

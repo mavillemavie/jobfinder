@@ -1,0 +1,29 @@
+# Personal data: never commit
+input/
+output/
+/master/
+data/
+.env
+*.db
+*.db-journal
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# OS / editor
+.DS_Store
+*.swp
+.playwright-mcp/
+
+# Yours, never published
+config/profile.yaml
+docs/private/

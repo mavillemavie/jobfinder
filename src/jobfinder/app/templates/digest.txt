@@ -1,0 +1,20 @@
+{{ subject }}
+Since {{ d.since.strftime('%Y-%m-%d %H:%M') }} UTC | new postings: {{ d.counts.new_postings }} | last scan scored {{ d.counts.scored }}, {{ d.counts.scan_matches }} matched (>= {{ d.counts.match_threshold }}) | spend MTD ${{ '%.2f'|format(d.spend_mtd) }}
+Dashboard: {{ d.base_url }}/
+
+TOP MATCHES
+{% for m in d.matches %}- [{{ m.score }}] {{ m.title }} @ {{ m.company }} ({{ m.where }}) {{ m.url }}
+  {{ m.summary }}
+{% else %}- none
+{% endfor %}
+CONTACTS FOUND
+{% for c in d.contacts %}- {{ c.name }} — {{ c.title }} @ {{ c.company }} {{ c.email or '' }} {{ c.phone or '' }} ({{ (c.confidence*100)|round }}%) {{ c.url }}
+{% else %}- none
+{% endfor %}
+DOCUMENTS READY
+{% for x in d.docs_ready %}- {{ x.title }} @ {{ x.company }} ATS {{ x.ats }} {{ x.url }}
+{% else %}- none
+{% endfor %}
+{% if d.errors %}ADAPTER ERRORS
+{% for k, v in d.errors.items() %}- {{ k }}: {{ v }}
+{% endfor %}{% endif %}

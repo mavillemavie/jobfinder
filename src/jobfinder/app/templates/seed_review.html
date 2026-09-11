@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Seed review · jobfinder{% endblock %}
+{% block content %}
+<h1>Seed review</h1>
+<p class="muted">Terms: {{ terms|join(', ') }}{% if notes %} · notes: {{ notes }}{% endif %}</p>
+<div class="card"><h2>Changes</h2>
+<ul>{% for c in changes %}<li>{{ c }}</li>{% else %}<li class="muted">nothing changed</li>{% endfor %}</ul>
+<h2>Diff</h2><pre class="desc">{{ diff }}</pre></div>
+<form method="post" action="/settings/seed/apply" class="card">
+  {% for t in terms %}<input type="hidden" name="terms" value="{{ t }}">{% endfor %}
+  <textarea rows="6" hidden name="proposed_yaml">{{ proposed_yaml }}</textarea>
+  <button class="primary">Apply to master (keeps a backup)</button> <a class="btn" href="/settings">Discard</a>
+</form>
+{% endblock %}

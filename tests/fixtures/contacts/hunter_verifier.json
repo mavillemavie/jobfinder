@@ -1,0 +1,1 @@
+{"data": {"status": "valid", "result": "deliverable", "score": 96, "email": "dana.lee@acmelogistics.example", "regexp": true, "gibberish": false, "disposable": false, "webmail": false, "mx_records": true, "smtp_server": true, "smtp_check": true, "accept_all": false, "block": false, "sources": []}}

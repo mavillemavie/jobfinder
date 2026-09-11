@@ -1,0 +1,11 @@
+{"results": [
+ {"jobId": 90001, "employerId": 12, "employerName": "Northwind Analytics Ltd", "jobTitle": "Data Analyst",
+  "locationName": "Leeds", "minimumSalary": 35000, "maximumSalary": 42000, "currency": "GBP",
+  "date": "02/09/2026", "expirationDate": "30/09/2026",
+  "jobDescription": "Data Analyst working with SQL and Power BI to support the finance team...",
+  "jobUrl": "https://www.reed.co.uk/jobs/data-analyst/90001", "applications": 12},
+ {"jobId": 90002, "employerId": 13, "employerName": "Fenwick Data Co", "jobTitle": "Reporting Analyst",
+  "locationName": "Manchester", "minimumSalary": 30000, "maximumSalary": 36000,
+  "date": "01/09/2026",
+  "jobDescription": "Reporting Analyst role using SQL and Excel to track KPIs...", "applications": 4}
+], "totalResults": 2}

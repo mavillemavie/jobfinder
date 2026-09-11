@@ -1,0 +1,38 @@
+{
+ "status": "OK",
+ "request_id": "fixture",
+ "parameters": {
+  "query": "data analyst in Canada"
+ },
+ "data": {
+  "jobs": [
+   {
+    "job_id": "abc123==",
+    "job_title": "Data Analyst (Remote - Canada)",
+    "employer_name": "Maple Fintech",
+    "employer_website": "https://maplefintech.example",
+    "job_publisher": "LinkedIn",
+    "job_apply_link": "https://jobs.lever.co/maplefintech/1111",
+    "job_description": "Full description with SQL, Python, Tableau and dbt. Remote across Canada.",
+    "job_is_remote": true,
+    "job_posted_at_datetime_utc": "2026-09-01T12:00:00.000Z",
+    "job_city": "Toronto",
+    "job_state": "ON",
+    "job_country": "CA",
+    "job_min_salary": null,
+    "job_max_salary": null,
+    "apply_options": [
+     {
+      "publisher": "LinkedIn",
+      "apply_link": "https://www.linkedin.com/jobs/view/1"
+     },
+     {
+      "publisher": "Lever",
+      "apply_link": "https://jobs.lever.co/maplefintech/1111"
+     }
+    ]
+   }
+  ],
+  "cursor": null
+ }
+}

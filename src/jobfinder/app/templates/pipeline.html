@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Pipeline · jobfinder{% endblock %}
+{% block content %}
+<h1>Pipeline</h1>
+<div class="board">
+{% for stage in stages %}
+<div class="col"><h3>{{ stage }} ({{ columns[stage]|length }})</h3>
+{% for pl in columns[stage] %}{% set p = pl.posting %}
+<div class="kcard"><a href="/jobs/{{ p.id }}"><strong>{{ p.company.name }}</strong></a><br>{{ p.title }}<br>
+  <span class="muted">{% if p.contacts %}{{ p.contacts[0].full_name or '' }}{% endif %}{% if pl.applied_at %} · applied {{ pl.applied_at|ago }} ago{% endif %}</span>
+  <form method="post" action="/pipeline/{{ p.id }}/move"><select name="stage">{% for s in stages %}<option value="{{ s }}" {% if s == stage %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <select name="close_reason"><option value="">reason</option>{% for r in close_reasons %}<option>{{ r }}</option>{% endfor %}</select><button>Go</button></form>
+</div>{% endfor %}
+</div>{% endfor %}
+</div>
+{% endblock %}

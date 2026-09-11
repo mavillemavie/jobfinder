@@ -1,0 +1,3 @@
+{"data": {"domain": "acmelogistics.example", "organization": "Acme Logistics", "pattern": "{first}.{last}", "accept_all": false,
+ "emails": [{"value": "info@acmelogistics.example", "type": "generic", "confidence": 90, "first_name": null, "last_name": null, "position": null, "verification": {"status": "valid"}}]},
+ "meta": {"results": 1, "limit": 1, "offset": 0}}

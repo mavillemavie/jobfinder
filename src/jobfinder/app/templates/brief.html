@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Brief · jobfinder{% endblock %}
+{% block content %}
+<h1>Brief preview <span class="muted">({{ d.counts.matches }} match{{ 'es' if d.counts.matches != 1 else '' }})</span></h1>
+<form method="get" class="card">
+  <span class="muted">Window: since {{ d.since.strftime('%Y-%m-%d %H:%M') }} UTC
+    {% if days %}(last {{ days }} days){% elif last_sent %}(the last sent brief){% else %}(no brief sent yet: last 24 h){% endif %}.
+    Every match is listed; the email keeps the top 10. Nothing is sent from here — use Settings → <em>Send digest now</em> for that.</span><br>
+  <label class="inline">look back <input type="number" name="days" min="1" max="60" value="{{ days or '' }}" style="width:80px"> days</label>
+  <button class="primary">Preview</button>
+  {% if days %}<a href="/brief">reset to the last sent brief</a>{% endif %}
+</form>
+<iframe title="{{ subject }}" srcdoc="{{ html }}" style="width:100%;height:78vh;border:1px solid #ddd;border-radius:6px;background:#fff"></iframe>
+{% endblock %}

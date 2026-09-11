@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Inbox · jobfinder{% endblock %}
+{% block content %}
+<h1>Inbox <span class="muted">({{ rows|length }})</span></h1>
+<form method="get" class="card">
+  <select name="status">{% for s in ['match','scored','new','shortlisted','dismissed','all'] %}<option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <input type="number" name="min_score" placeholder="min score" value="{{ min_score or '' }}" style="width:110px">
+  <select name="location"><option value="">any location</option>{% for l in locations %}<option value="{{ l }}" {% if l == location %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <input type="text" name="q" placeholder="title contains" value="{{ q or '' }}">
+  <button class="primary">Filter</button>
+</form>
+<table>
+<thead><tr><th>Score</th><th>Title / Company</th><th>Where</th><th>Seen</th><th>Why</th><th>Actions</th></tr></thead>
+<tbody>
+{% for p in rows %}{% include "_posting_row.html" %}{% endfor %}
+</tbody></table>
+{% endblock %}

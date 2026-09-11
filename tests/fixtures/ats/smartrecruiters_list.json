@@ -1,0 +1,6 @@
+{"totalFound": 2, "content": [{"id": "7788", "name": "Data Analyst", "releasedDate": "2026-09-01T12:00:00.000Z",
+ "location": {"city": "London", "region": "England", "country": "gb", "remote": false},
+ "ref": "https://api.smartrecruiters.com/v1/companies/acme/postings/7788", "company": {"identifier": "acme"}},
+ {"id": "7799", "name": "Reporting Analyst", "releasedDate": "2026-09-02T09:00:00.000Z",
+ "location": {"city": "Montreal", "region": "Quebec", "country": "ca", "remote": false},
+ "company": {"identifier": "acme"}}]}

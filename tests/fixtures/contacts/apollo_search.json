@@ -1,0 +1,5 @@
+{"people": [
+ {"id": "p1", "first_name": "Dana", "last_name_obfuscated": "L.", "title": "Manager, Analytics", "has_email": true, "has_direct_phone": "Yes", "organization": {"name": "Acme Logistics"}},
+ {"id": "p2", "first_name": "Sam", "last_name_obfuscated": "R.", "title": "Talent Acquisition Partner", "has_email": true, "has_direct_phone": "Maybe: mobile", "organization": {"name": "Acme Logistics"}},
+ {"id": "p3", "first_name": "Ana", "last_name_obfuscated": "P.", "title": "Data Analyst", "has_email": false, "has_direct_phone": null, "organization": {"name": "Acme Logistics"}}
+], "pagination": {"page": 1, "per_page": 5, "total_entries": 3}}

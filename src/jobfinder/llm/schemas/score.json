@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fit_score", "reasons", "missing_requirements", "seniority_match", "eligibility", "language", "red_flags", "one_line_summary"],
+  "properties": {
+    "fit_score": {"type": "integer", "minimum": 0, "maximum": 100},
+    "reasons": {"type": "array", "minItems": 1, "maxItems": 3, "items": {"type": "string", "maxLength": 200}},
+    "missing_requirements": {"type": "array", "maxItems": 8, "items": {"type": "string", "maxLength": 120}},
+    "seniority_match": {"type": "string", "enum": ["under", "match", "over"]},
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["remote_from_canada", "uk_right_to_work_required", "sponsorship_mentioned"],
+      "properties": {
+        "remote_from_canada": {"type": "string", "enum": ["yes", "no", "unclear"]},
+        "uk_right_to_work_required": {"type": "string", "enum": ["yes", "no", "unclear"]},
+        "sponsorship_mentioned": {"type": "string", "enum": ["yes", "no", "unclear"]}
+      }
+    },
+    "language": {"type": "string", "enum": ["en", "fr", "other"]},
+    "red_flags": {"type": "array", "maxItems": 6, "items": {"type": "string", "maxLength": 120}},
+    "one_line_summary": {"type": "string", "maxLength": 300}
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["titles", "talent_title", "language"],
+  "properties": {
+    "titles": {"type": "array", "minItems": 2, "maxItems": 8, "items": {"type": "string", "maxLength": 80}},
+    "talent_title": {"type": "string", "maxLength": 80},
+    "language": {"type": "string", "enum": ["en", "fr"]}
+  }
+}

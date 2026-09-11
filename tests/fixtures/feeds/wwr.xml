@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>We Work Remotely</title>
+<item>
+ <title>Lumen Labs: Analytics Engineer</title>
+ <region>Anywhere in the World</region>
+ <category>Programming</category>
+ <link>https://weworkremotely.com/remote-jobs/lumen-labs-analytics-engineer</link>
+ <description><![CDATA[<p>Analytics Engineer to own our dbt models and Metabase dashboards.</p>]]></description>
+ <pubDate>Mon, 01 Sep 2026 14:00:00 +0000</pubDate>
+ <guid>https://weworkremotely.com/remote-jobs/lumen-labs-analytics-engineer</guid>
+</item>
+<item>
+ <title>Acme: Senior Rust Engineer</title><region>USA Only</region><category>Programming</category>
+ <link>https://weworkremotely.com/remote-jobs/acme-senior-rust-engineer</link>
+ <description><![CDATA[<p>Rust.</p>]]></description>
+ <pubDate>Mon, 01 Sep 2026 14:00:00 +0000</pubDate>
+ <guid>https://weworkremotely.com/remote-jobs/acme-senior-rust-engineer</guid>
+</item></channel></rss>

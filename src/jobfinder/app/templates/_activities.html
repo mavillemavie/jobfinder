@@ -1,0 +1,7 @@
+<h2>Activity</h2>
+<form hx-post="/jobs/{{ p.id }}/activities" hx-target="#activities" hx-swap="innerHTML">
+  <select name="kind">{% for k in activity_kinds %}<option>{{ k }}</option>{% endfor %}</select>
+  <input type="text" name="outcome" placeholder="outcome (voicemail, spoke, replied…)">
+  <input type="text" name="body" placeholder="note"><button>Log</button>
+</form>
+<ul>{% for a in activities %}<li><span class="muted">{{ a.occurred_at.strftime('%Y-%m-%d %H:%M') }}</span> <strong>{{ a.kind }}</strong> {{ a.outcome or '' }} — {{ a.body }}</li>{% endfor %}</ul>

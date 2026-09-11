@@ -1,0 +1,11 @@
+<h2>Outreach drafts</h2>
+{% for d in drafts %}
+<form hx-post="/jobs/{{ p.id }}/drafts/{{ d.id }}" hx-target="#drafts" hx-swap="innerHTML" class="kcard">
+  <strong>{{ 'Cold email' if d.kind == 'email' else 'Call script (60s)' }}</strong>
+  {% if d.kind == 'email' %}<label>Subject</label><input type="text" name="subject" value="{{ d.subject }}" style="width:100%">{% endif %}
+  <label>Body</label><textarea name="body" rows="{{ 8 if d.kind == 'email' else 12 }}">{{ d.body }}</textarea>
+  <button>Save</button>
+  {% if d.kind == 'email' %}<a class="btn primary" target="_blank" rel="noopener" href="{{ gmail(email_contact.email if email_contact else None, d.subject, d.body) }}">Compose in Gmail ↗</a>{% endif %}
+</form>
+{% else %}<p class="muted">No drafts yet.</p>{% endfor %}
+<button class="primary" hx-post="/jobs/{{ p.id }}/drafts" hx-target="#drafts" hx-swap="innerHTML">{{ 'Regenerate drafts' if drafts else 'Write drafts' }}</button>

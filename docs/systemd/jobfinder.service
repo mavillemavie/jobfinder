@@ -1,0 +1,15 @@
+[Unit]
+Description=jobfinder dashboard + scheduler
+After=network-online.target
+
+[Service]
+# Edit these two lines for your machine.
+WorkingDirectory=%h/jobfinder
+# The scheduler shells out to the `claude` CLI; it must be on PATH here (under nvm if you use it).
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=%h/.local/bin/uv run jobfinder serve
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

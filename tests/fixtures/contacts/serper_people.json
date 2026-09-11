@@ -1,0 +1,7 @@
+{"searchParameters": {"q": "site:linkedin.com/in \"Acme Logistics\" \"Manager, Analytics\"", "gl": "ca", "hl": "en"},
+ "organic": [
+  {"title": "Dana Lee - Manager, Analytics - Acme Logistics | LinkedIn", "link": "https://ca.linkedin.com/in/dana-lee-analytics", "snippet": "Manager, Analytics at Acme Logistics · Montreal, Quebec, Canada", "position": 1},
+  {"title": "Pat Doe - Manager, Analytics - Other Corp | LinkedIn", "link": "https://www.linkedin.com/in/pat-doe", "snippet": "Manager, Analytics at Other Corp", "position": 2},
+  {"title": "Sam Roy - Talent Acquisition Partner - Acme Logistics | LinkedIn", "link": "https://www.linkedin.com/in/sam-roy-ta", "snippet": "Talent Acquisition Partner at Acme Logistics", "position": 3},
+  {"title": "Acme Logistics | LinkedIn", "link": "https://www.linkedin.com/company/acme-logistics", "snippet": "Acme Logistics | 2,341 followers", "position": 4}
+ ]}

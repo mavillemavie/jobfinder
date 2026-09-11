@@ -1,0 +1,61 @@
+{% extends "base.html" %}{% block title %}Settings · jobfinder{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+<div class="grid">
+<div>
+<form method="post" action="/settings/profile" class="card">
+  <h2>Target profile</h2>
+  <label>Title clusters (a line ending with ":" starts a cluster; one term per line)</label>
+  <textarea name="titles_include" rows="10">{{ titles_text }}</textarea>
+  <label>Search keywords sent to the job boards (one per line; empty = first two terms of each cluster). Every cluster term still filters titles; only these are searched, and each one costs a call per location on Adzuna, Reed and Job Bank.</label>
+  <textarea name="search_keywords" rows="6">{{ profile.titles.search_keywords|join('\n') }}</textarea>
+  <label>Exclude words in title (one per line; a word may contain a comma, e.g. "vp,")</label>
+  <textarea name="exclude_words" rows="4">{{ profile.titles.exclude_words|join('\n') }}</textarea>
+  <label>Seniority allowed</label>{% for s in seniorities %}<label class="inline"><input type="checkbox" name="seniority_allowed" value="{{ s }}" {% if s in profile.titles.seniority_allowed %}checked{% endif %}> {{ s }}</label>{% endfor %}
+  <h2>Locations</h2>{% for loc in profile.locations %}<label><input type="checkbox" name="loc_{{ loc.key }}" {% if loc.enabled %}checked{% endif %}> {{ loc.key }} <span class="muted">{{ loc.country or '' }} {{ loc.cities|join(', ') }} {{ loc.remote_scope|join('/') }}</span></label>{% endfor %}
+  <h2>Scoring</h2>
+  <label>match_threshold</label><input type="number" name="match_threshold" value="{{ profile.scoring.match_threshold }}">
+  <label>max_llm_scored_per_run</label><input type="number" name="max_llm_scored_per_run" value="{{ profile.scoring.max_llm_scored_per_run }}">
+  <label>max_posting_age_days</label><input type="number" name="max_posting_age_days" value="{{ profile.scoring.max_posting_age_days }}">
+  <label>min_keyword_overlap</label><input type="number" name="min_keyword_overlap" value="{{ profile.scoring.min_keyword_overlap }}">
+  <label>Candidate note for the scorer (eligibility: visa status, relocation; not résumé claims)</label>
+  <textarea name="candidate_note" rows="3">{{ profile.scoring.candidate_note }}</textarea>
+  <h2>Sources</h2>{% for name in source_names %}<label><input type="checkbox" name="src_{{ name }}" {% if profile.source_enabled(name) %}checked{% endif %}> {{ name }}
+    {% if name in keys and not keys[name] and name in ['adzuna','reed','jooble','jsearch','linkedin_jobs','active_jobs_db'] %}<span class="warn">(key missing in .env)</span>{% endif %}
+    {% if health.get(name) %}<span class="muted">ok {{ health[name].last_ok_at|ago }} ago{% if health[name].last_error %} · <span class="bad">{{ health[name].last_error[:80] }}</span>{% endif %}{% if health[name].cooldown_until %} · cooldown{% endif %}</span>{% endif %}</label>{% endfor %}
+  <h2>Contacts &amp; budget</h2>
+  <label>monthly_usd_cap</label><input type="number" step="1" name="monthly_usd_cap" value="{{ profile.contacts.monthly_usd_cap }}">
+  <p class="muted">Spend this month: ${{ '%.2f'|format(spend) }} · keys: {% for k, v in contact_keys.items() %}<span class="chip {{ 'ok' if v else 'warn' }}">{{ k }} {{ 'set' if v else 'missing' }}</span>{% endfor %}</p>
+  <h2>Schedule</h2>
+  <label>scan_run_at</label><input type="text" name="scan_run_at" value="{{ profile.scan.run_at }}">
+  <label>digest_send_at</label><input type="text" name="digest_send_at" value="{{ profile.digest.send_at }}">
+  <label><input type="checkbox" name="digest_enabled" {% if profile.digest.enabled %}checked{% endif %}> digest enabled {% if not digest_ready %}<span class="warn">(Gmail app password missing in .env)</span>{% endif %}</label>
+  <label>public_base_url</label><input type="text" name="public_base_url" value="{{ profile.dashboard.public_base_url }}" style="width:100%">
+  <p><button class="primary">Save profile</button></p>
+</form>
+</div>
+<div>
+  <div class="card"><h2>Actions</h2>
+    <form method="post" action="/settings/scan" class="inline"><button class="primary">Run scan now</button></form>
+    <form method="post" action="/settings/digest" class="inline"><button>Send digest now</button></form>
+    <a class="btn" href="/runs">Runs</a></div>
+  <form method="post" action="/settings/seed" class="card">
+    <h2>Seed the master</h2>
+    <p class="muted">Terms postings kept asking for that the master never says (last 14 days). Tick only what is genuinely true for you; the model weaves them into existing bullets and skill groups, you review the diff, then apply.</p>
+    {% if gaps %}<table><tr><th></th><th>term</th><th>count</th><th>scores / docs / drops</th></tr>
+    {% for g in gaps %}<tr><td><input type="checkbox" name="terms" value="{{ g.term }}"></td><td>{{ g.term }}</td><td>{{ g.count }}</td><td class="muted">{{ g.scores }} / {{ g.documents }} / {{ g.drops }}</td></tr>{% endfor %}</table>
+    {% else %}<p class="muted">No gaps recorded yet — they appear after scans score and tailor postings.</p>{% endif %}
+    <label>Other true terms (comma-separated)</label><input type="text" name="custom" style="width:100%">
+    <label>Notes for the model (nuance, e.g. "Python: working knowledge, not a primary language")</label>
+    <textarea name="notes" rows="3"></textarea>
+    <p><button class="primary" onclick="this.disabled=true;this.textContent='Proposing… the model takes about a minute';this.form.submit()">Propose seed</button>
+    <span class="muted">One strong-tier model call (~40–60 s); the result page shows the diff before anything is written.</span></p>
+  </form>
+  <form method="post" action="/settings/master" class="card">
+    <h2>Master resume (YAML)</h2><textarea name="resume_yaml" rows="24">{{ master_text }}</textarea>
+    <h2>Master cover letter</h2><textarea name="cover_letter" rows="10">{{ cover_text }}</textarea>
+    <p><button class="primary">Save master</button></p>
+  </form>
+</div>
+</div>
+{% endblock %}

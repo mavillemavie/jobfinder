@@ -1,0 +1,11 @@
+{"name": "Acme", "jobs": [
+ {"title": "Reporting Analyst", "shortcode": "E5F6", "url": "https://apply.workable.com/acme/j/E5F6/",
+  "application_url": "https://apply.workable.com/acme/j/E5F6/apply/", "description": "<p>Excel and Tableau reporting.</p>",
+  "requirements": "<ul><li>SQL</li></ul>",
+  "location": {"location_str": "Montreal, Quebec, Canada", "city": "Montreal", "country": "Canada",
+   "country_code": "CA", "telecommuting": true, "workplace_type": "remote"},
+  "created_at": "2026-09-01"},
+ {"title": "Data Analyst", "shortcode": "G7H8", "url": "https://apply.workable.com/acme/j/G7H8/",
+  "application_url": "https://apply.workable.com/acme/j/G7H8/apply/",
+  "location": {"city": "Edmonton", "country": "Canada", "country_code": "CA", "telecommuting": false}}
+]}

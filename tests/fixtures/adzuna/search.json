@@ -1,0 +1,11 @@
+{"count": 2, "results": [
+ {"id": "5001", "title": "Senior Data Analyst", "company": {"display_name": "Acme Logistics Inc."},
+  "location": {"display_name": "Montreal, Quebec", "area": ["Canada", "Quebec", "Montreal"]},
+  "description": "We are looking for a data analyst to build Power BI dashboards ...",
+  "redirect_url": "https://www.adzuna.ca/land/ad/5001?se=x", "created": "2026-09-01T14:22:10Z",
+  "salary_min": 70000, "salary_max": 85000, "contract_time": "full_time"},
+ {"id": "5002", "title": "BI Developer", "company": {"display_name": "Beta Retail"},
+  "location": {"display_name": "Laval, Quebec", "area": ["Canada", "Quebec", "Laval"]},
+  "description": "SQL and Tableau ...", "redirect_url": "https://www.adzuna.ca/land/ad/5002",
+  "created": "2026-08-30T09:00:00Z"}
+]}

@@ -1,0 +1,16 @@
+<tr id="row-{{ p.id }}">
+  <td>{% set s = p.latest_score %}<span class="score {{ (s.fit_score if s else None)|score_class }}">{{ s.fit_score if s else '–' }}</span></td>
+  <td><a href="/jobs/{{ p.id }}"><strong>{{ p.title }}</strong></a><br><span class="muted">{{ p.company.name }}</span>
+      {% for src in p.sources %}<span class="chip">{{ src.source }}</span>{% endfor %}
+      {% if p.language == 'fr' %}<span class="chip">FR</span>{% endif %}
+      {% if note %}<span class="chip ok">{{ note }}</span>{% endif %}</td>
+  <td>{{ p.city or '' }} {{ p.country or '' }}<br><span class="muted">{{ p.remote_type }} {{ (p.prefilter_result or {}).get('location_key','') }}</span></td>
+  <td>{{ p.first_seen_at|ago }}</td>
+  <td class="muted">{% if s %}{{ s.one_line_summary }}<br><small>{{ s.reasons|join(' · ') }}</small>{% endif %}</td>
+  <td>
+    <button hx-post="/postings/{{ p.id }}/shortlist" hx-target="#row-{{ p.id }}" hx-swap="outerHTML">Shortlist</button>
+    <form class="inline" hx-post="/postings/{{ p.id }}/dismiss" hx-target="#row-{{ p.id }}" hx-swap="outerHTML">
+      <select name="reason">{% for r in reasons %}<option>{{ r }}</option>{% endfor %}</select><button>Dismiss</button></form>
+    <button hx-post="/postings/{{ p.id }}/rescore" hx-target="#row-{{ p.id }}" hx-swap="outerHTML">Re-score</button>
+  </td>
+</tr>

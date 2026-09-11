@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% block title %}{{ p.title }} · jobfinder{% endblock %}
+{% block content %}
+<h1>{{ p.title }} <span class="muted">@ {{ p.company.name }}</span></h1>
+<p class="muted">{{ p.location_raw or '' }} · {{ p.remote_type }} · {{ p.language|upper }} · seen {{ p.first_seen_at|ago }} ago ·
+  <a href="{{ p.apply_url }}" target="_blank" rel="noopener">Open posting / apply ↗</a></p>
+<div class="grid">
+<div>
+  <div class="card">
+    <h2>Fit {% if score %}<span class="score {{ score.fit_score|score_class }}">{{ score.fit_score }}</span>{% endif %}</h2>
+    {% if score %}<ul>{% for r in score.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+    <p><strong>Missing:</strong> {{ score.missing_requirements|join(', ') or 'none' }} · <strong>Seniority:</strong> {{ score.seniority_match }}</p>
+    <p><strong>Eligibility:</strong> {% for k, v in score.eligibility.items() %}<span class="chip">{{ k }}: {{ v }}</span>{% endfor %}</p>
+    {% if score.red_flags %}<p class="bad">Red flags: {{ score.red_flags|join('; ') }}</p>{% endif %}{% endif %}
+    <form class="inline" hx-post="/postings/{{ p.id }}/rescore" hx-target="#rescored" hx-swap="innerHTML"><button>Re-score</button></form><span id="rescored"></span>
+  </div>
+  <div class="card" id="documents">{% include "_documents.html" %}</div>
+  <div class="card" id="drafts">{% include "_drafts.html" %}</div>
+  <div class="card"><h2>Posting</h2><pre class="desc">{{ p.description_text }}</pre></div>
+</div>
+<div>
+  <div class="card">
+    <h2>Pipeline</h2>
+    <form method="post" action="/jobs/{{ p.id }}/stage">
+      <select name="stage">{% for s in stages %}<option value="{{ s }}" {% if p.pipeline and p.pipeline.stage == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+      <select name="close_reason"><option value="">close reason</option>{% for r in close_reasons %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select>
+      <button class="primary">Move</button>
+    </form>
+    <form hx-post="/jobs/{{ p.id }}/notes" hx-swap="none"><label>Notes</label><textarea name="notes" rows="4">{{ p.pipeline.notes if p.pipeline else '' }}</textarea><button>Save notes</button></form>
+  </div>
+  <div class="card" id="contacts">{% include "_contacts.html" %}</div>
+  <div class="card" id="activities">{% include "_activities.html" %}</div>
+</div>
+</div>
+{% endblock %}

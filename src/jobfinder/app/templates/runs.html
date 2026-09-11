@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Runs · jobfinder{% endblock %}
+{% block content %}
+<h1>Runs</h1>
+<table><tr><th>Started</th><th>Kind</th><th>Status</th><th>Stats</th></tr>
+{% for r in rows %}<tr><td>{{ r.started_at.strftime('%Y-%m-%d %H:%M') }}<br><span class="muted">{{ r.started_at|ago }} ago</span></td><td>{{ r.kind }}</td>
+<td class="{{ 'ok' if r.status == 'ok' else 'bad' if r.status == 'error' else 'warn' }}">{{ r.status }}</td>
+<td><pre class="desc">{{ r.stats|tojson(indent=1) }}</pre></td></tr>{% endfor %}</table>
+<p class="muted">Page auto-refreshes every 20s while a run is in progress.</p>
+{% if rows and rows[0].status == 'running' %}<div hx-get="/runs" hx-trigger="every 20s" hx-select="main" hx-target="main" hx-swap="innerHTML"></div>{% endif %}
+{% endblock %}

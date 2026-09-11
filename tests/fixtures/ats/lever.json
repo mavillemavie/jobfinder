@@ -1,0 +1,4 @@
+[{"id": "a1b2", "text": "Analytics Engineer", "hostedUrl": "https://jobs.lever.co/acme/a1b2",
+  "applyUrl": "https://jobs.lever.co/acme/a1b2/apply", "workplaceType": "remote",
+  "categories": {"location": "Canada", "team": "Data", "commitment": "Full-time"},
+  "descriptionPlain": "Build dbt models.", "lists": [{"text": "Requirements", "content": "<li>SQL</li><li>dbt</li>"}]}]

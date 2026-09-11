@@ -1,0 +1,80 @@
+# jobfinder target profile — edited in the dashboard Settings page or by hand.
+titles:
+  clusters:
+  - name: reporting-analytics
+    include: [data analyst, reporting analyst, business intelligence analyst, bi analyst, analytics specialist, 
+        analytics analyst, insights analyst, data and reporting analyst, analyste de données, analyste données]
+  - name: bi-engineering
+    include: [bi developer, power bi developer, power bi analyst, tableau developer, analytics engineer, business 
+        intelligence developer, data visualization developer]
+  - name: hr-analytics                 # JF's actual background: workforce / HR / people analytics
+    include: [people analytics, people analyst, hr analyst, hr data analyst, hr reporting analyst, hris analyst, 
+        workforce analyst, workforce analytics, compensation analyst, talent analytics, analyste rh, analyste ressources
+        humaines, analyste en analytique rh]
+  exclude_words: [vice president, "vp,", head of, director, intern, co-op, phd required]
+  seniority_allowed: [junior, intermediate, senior, lead, management, intern, unspecified]
+
+locations:                       # a posting passes if ANY enabled entry matches
+- {key: canada-any, enabled: true, country: CA}
+- {key: remote-from-canada, enabled: true, remote_scope: [canada, worldwide, americas]}
+- {key: edmonton, enabled: true, country: CA, region: AB, cities: [Edmonton]}
+- {key: montreal, enabled: true, country: CA, region: QC, cities: [Montreal, Montréal, Laval, Longueuil]}
+- {key: vancouver, enabled: true, country: CA, region: BC, cities: [Vancouver, Burnaby, Richmond, Surrey]}
+- {key: uk, enabled: true, country: GB}
+
+scoring:
+  match_threshold: 70            # >= this → match → digest + auto contact discovery
+  max_llm_scored_per_run: 60
+  max_posting_age_days: 21       # older than this at first sight → dropped
+  min_keyword_overlap: 3         # prefilter: resume skill terms found in posting
+  max_hydrate_per_run: 100        # hydration: fetch full text for at most N snippet-only postings per run, pausing between requests
+  hydrate_delay_s: 5           # seconds to pause between hydration requests to the same host
+  candidate_note: "Based in Montreal, Canada. A UK work visa is pending, so UK on-site and hybrid roles are acceptable: do
+    not penalise a UK right-to-work requirement or a UK location. Remote roles must allow working from Canada unless the employer
+    is in the UK."
+
+sources:                         # per-adapter switch and daily call cap
+  adzuna: {enabled: true, daily_calls: 40, agencies: include}
+  reed: {enabled: true, daily_calls: 40, agencies: include}
+  jooble: {enabled: true, daily_calls: 20, agencies: include}
+  jsearch: {enabled: true, daily_calls: 6, agencies: include}
+  jobbank_rss: {enabled: true, daily_calls: 40, agencies: include} # 2 calls per (keyword x location): session + feed
+  remotive: {enabled: true, agencies: include}
+  weworkremotely: {enabled: true, agencies: include}
+  linkedin_guest: {enabled: true, daily_calls: 12, agencies: include}
+  ats_boards: {enabled: true, daily_calls: 60, agencies: include} # pooled across every ats_* adapter
+
+  linkedin_jobs:
+    enabled: true
+    daily_calls: 1
+    page_size: 8
+    agencies: include
+  active_jobs_db:
+    enabled: true
+    daily_calls: 1
+    page_size: 8
+    exclude_organizations: []
+    agencies: exclude
+contacts:
+  auto_run_on_match: true
+  monthly_usd_cap: 50
+  per_job_credit_cap: {apollo: 3, hunter: 2, websearch: 6}
+  stop_when: verified_email_and_any_phone
+  max_runs_per_scan: 5             # contact runs started automatically per scan (≈ 7.5 Hunter credits/day worst case)
+  search_fallback: ddg             # ddg | none — web search when no SERPER_API_KEY
+  provider_limits:                 # free-tier unit counters; set paid: true + usd_per_unit when subscribed
+    hunter: {monthly_units: 45, usd_per_unit: 0.0245, paid: false}   # 50 free/mo, keep 5 for retries
+    serper: {monthly_units: 300, usd_per_unit: 0.001, paid: false}   # 2,500 one-time grant ≈ 8 months
+    apollo: {monthly_units: 75, usd_per_unit: null, paid: false}     # $/credit unconfirmed → never paid
+
+  run_on_shortlist: true
+scan: {run_at: "06:00", timezone: America/Montreal}   # 60 min before the digest
+digest: {enabled: true, send_at: "07:00", timezone: America/Montreal}
+dashboard:
+  port: 3838
+  bind_host: "0.0.0.0"                    # Tailscale + localhost; guarded by allowed_client_cidrs
+  public_base_url: "http://localhost:3838"
+  allowed_client_cidrs: ["127.0.0.0/8", "::1/128", "100.64.0.0/10"]
+documents:
+  languages: auto               # auto → French docs for French postings, English otherwise
+  file_name_pattern: "Jordan-Test-{kind}-{company}"

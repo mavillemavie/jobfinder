@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}jobfinder{% endblock %}</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/htmx.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">jobfinder</a>
+  <nav>
+    <a href="/" {% if active == 'inbox' %}class="on"{% endif %}>Inbox</a>
+    <a href="/pipeline" {% if active == 'pipeline' %}class="on"{% endif %}>Pipeline</a>
+    <a href="/brief" {% if active == 'brief' %}class="on"{% endif %}>Brief</a>
+    <a href="/runs" {% if active == 'runs' %}class="on"{% endif %}>Runs</a>
+    <a href="/settings" {% if active == 'settings' %}class="on"{% endif %}>Settings</a>
+  </nav>
+</header>
+<main>
+{% if flash %}<div class="flash">{{ flash }}</div>{% endif %}
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

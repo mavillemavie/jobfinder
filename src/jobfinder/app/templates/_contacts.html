@@ -1,0 +1,13 @@
+<h2>Contacts</h2>
+{% if error %}<p class="bad">{{ error }}</p>{% endif %}
+{% for c in contacts %}
+<div class="kcard">
+  <strong>{{ c.full_name or 'Unknown person' }}</strong> <span class="muted">{{ c.title or '' }}</span> <span class="chip">{{ c.role_kind }}</span> <span class="chip">conf {{ c.confidence|pct }}</span><br>
+  {% if c.email %}✉ {{ c.email }} <span class="chip">{{ c.email_status }}</span> {% endif %}
+  {% if c.phone %}☎ {{ c.phone }} <span class="chip">{{ c.phone_kind }}</span>{% endif %}
+  {% if c.linkedin_url %}<a href="{{ c.linkedin_url }}" target="_blank" rel="noopener">LinkedIn</a>{% endif %}
+  {% if c.evidence %}<details><summary class="muted">evidence</summary><pre class="desc">{{ c.evidence|tojson(indent=1) }}</pre></details>{% endif %}
+  <form class="inline" hx-post="/jobs/{{ p.id }}/contacts/{{ c.id }}/delete" hx-target="#contacts" hx-swap="innerHTML"><button>Delete</button></form>
+</div>
+{% else %}<p class="muted">No contacts yet.{% if p.company.main_phone %} Switchboard: {{ p.company.main_phone }}{% endif %}</p>{% endfor %}
+<button class="primary" hx-post="/jobs/{{ p.id }}/contacts" hx-target="#contacts" hx-swap="innerHTML">{{ 'Retry contact search' if contacts else 'Find contact' }}</button>

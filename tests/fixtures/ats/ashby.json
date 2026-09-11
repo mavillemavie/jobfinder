@@ -1,0 +1,8 @@
+{"jobs": [
+ {"id": "c3d4", "title": "Data Analyst", "location": "Edmonton, AB", "isRemote": false,
+  "publishedAt": "2026-09-02T00:00:00Z", "jobUrl": "https://jobs.ashbyhq.com/acme/c3d4", "applyUrl": "https://jobs.ashbyhq.com/acme/c3d4/application",
+  "descriptionPlain": "Power BI and SQL for operations reporting.", "descriptionHtml": "<p>Power BI and SQL for operations reporting.</p>"},
+ {"title": "Reporting Analyst", "location": "Calgary, AB", "isRemote": false,
+  "publishedAt": "2026-09-01T00:00:00Z", "jobUrl": "https://jobs.ashbyhq.com/acme/no-id-reporting-analyst",
+  "descriptionPlain": "SQL reporting for the finance team."}
+]}

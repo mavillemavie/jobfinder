@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["unsupported_claims"],
+  "properties": {
+    "unsupported_claims": {
+      "type": "array", "maxItems": 20, "items": {"type": "string", "maxLength": 200}
+    }
+  }
+}

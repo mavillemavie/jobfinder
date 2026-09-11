@@ -1,0 +1,77 @@
+[
+ {
+  "id": 2349816667,
+  "title": "Senior Data Analyst",
+  "organization": "Konrad",
+  "organization_url": null,
+  "url": "https://www.konrad.com/careers/job/7985701003?gh_jid=7985701003",
+  "date_posted": "2026-09-03T17:45:41",
+  "date_created": "2026-09-06T04:15:37.253151",
+  "description_text": "Who We Are\nKonrad is a next-generation digital consultancy. We are dedicated to solving complex business problems for our global clients with creative and forward-thinking solutions. Our employees enjoy a culture built on innovation and a commitment to creating best-in-class digital products in use by hundreds of millions of consumers around the world. We hire exceptionally smart, analytical, and ",
+  "locations_derived": [
+   "Toronto, Ontario, Canada"
+  ],
+  "cities_derived": [
+   "Toronto"
+  ],
+  "regions_derived": [
+   "Ontario"
+  ],
+  "countries_derived": [
+   "Canada"
+  ],
+  "ai_work_arrangement": "Hybrid",
+  "salary": null,
+  "employment_type": null,
+  "source": "greenhouse",
+  "source_type": "ats",
+  "source_domain": "www.konrad.com",
+  "ai_hiring_manager_name": null,
+  "ai_hiring_manager_email_address": null,
+  "ai_visa_sponsorship": false,
+  "ai_experience_level": "2-5"
+ },
+ {
+  "id": 2350002020,
+  "title": "Analytics Engineer",
+  "organization": "Axle Energy",
+  "organization_url": "https://axle.energy",
+  "url": "https://jobs.ashbyhq.com/axle-careers/906fc3ee-e6a2-4e0f-8cea-8e769c0a95ab",
+  "date_posted": "2026-09-03T00:00:00",
+  "date_created": "2026-09-06T10:21:23.570923",
+  "description_text": "About Us\nAt Axle Energy, we\u2019re building the infrastructure that will underpin the decarbonised energy system. Our software moves energy usage to times when electricity is cheap and green, by controlling vehicle charging, heating systems, and home batteries. We control hundreds of thousands of energy assets.\nWe\u2019re building in a legacy industry and moving gigawatt-hours of electrons in the real worl",
+  "locations_derived": [
+   "London, England, United Kingdom"
+  ],
+  "cities_derived": [
+   "London"
+  ],
+  "regions_derived": [
+   "England"
+  ],
+  "countries_derived": [
+   "United Kingdom"
+  ],
+  "ai_work_arrangement": "Hybrid",
+  "salary": {
+   "@type": "MonetaryAmount",
+   "currency": "GBP",
+   "value": {
+    "@type": "QuantitativeValue",
+    "minValue": 75000,
+    "maxValue": 200000,
+    "unitText": "YEAR"
+   }
+  },
+  "employment_type": [
+   "FULL_TIME"
+  ],
+  "source": "ashby",
+  "source_type": "ats",
+  "source_domain": "jobs.ashbyhq.com",
+  "ai_hiring_manager_name": null,
+  "ai_hiring_manager_email_address": null,
+  "ai_visa_sponsorship": false,
+  "ai_experience_level": "2-5"
+ }
+]
