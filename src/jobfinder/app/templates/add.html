@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% block title %}Add job · jobfinder{% endblock %}
+{% block content %}
+<h1>Add job</h1>
+{% if error %}<div class="flash">{{ error }}</div>{% endif %}
+{% if step == 1 %}
+<div class="card">
+  <form method="post" action="/add/preview">
+    <label>Posting URL</label>
+    <input name="url" type="url" required value="{{ url }}" placeholder="https://..." style="width:100%">
+    <label>Job description <span class="muted">(optional — paste it if the site blocks reading the page)</span></label>
+    <textarea name="text" rows="8" style="width:100%">{{ text }}</textarea>
+    <button class="primary">Read posting</button>
+  </form>
+</div>
+{% else %}
+<div class="card">
+  {% if existing %}<p class="warn">Already in jobfinder: <a href="/jobs/{{ existing.id }}">#{{ existing.id }}</a>{% if existing.pipeline %} · stage {{ existing.pipeline.stage }}{% endif %}. Saving updates it.</p>{% endif %}
+  {% if job.fetch_error %}<p class="bad">Could not read the page ({{ job.fetch_error }}).{% if job.thin %} Paste the job description below.{% endif %}</p>
+  {% elif job.thin %}<p class="warn">The page gave only a short description — paste the job description below for a better score and tailoring.</p>{% endif %}
+  {% if origin_label %}<p class="muted">{{ origin_label }}</p>{% endif %}
+  <form method="post" action="/add">
+    <input type="hidden" name="url" value="{{ job.url }}">
+    <input type="hidden" name="posted_at" value="{{ job.posted_at.isoformat() if job.posted_at else '' }}">
+    <label>Title</label><input name="title" value="{{ job.title }}" required style="width:100%">
+    <label>Company</label><input name="company" value="{{ job.company }}" required style="width:100%">
+    <label>Location</label><input name="location" value="{{ job.location or '' }}" style="width:100%">
+    <label>Description</label><textarea name="description" rows="14" style="width:100%">{{ job.description }}</textarea>
+    <button class="primary">Save to Shortlist</button> <a href="/add">Start over</a>
+  </form>
+  <p class="muted"><a href="{{ job.url }}" target="_blank" rel="noopener">Open posting ↗</a></p>
+</div>
+{% endif %}
+{% endblock %}

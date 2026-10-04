@@ -55,12 +55,14 @@ def _ctx(p: Posting) -> dict:
 def job_page(
     posting_id: int,
     request: Request,
+    added: int = 0,
     session: Session = Depends(db_session),
     profile: Profile = Depends(current_profile),
 ):  # noqa: ANN201
     p = _get(session, posting_id)
+    flash = "Added to Shortlist — scoring in the background." if added else None
     return templates.TemplateResponse(
-        request, "job.html", {"active": "inbox", **_ctx(p), "profile": profile}
+        request, "job.html", {"active": "inbox", **_ctx(p), "profile": profile, "flash": flash}
     )
 
 

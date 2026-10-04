@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from jobfinder.db.models import Company, Posting
 from jobfinder.discovery.fetch import BudgetExceeded, HttpClient, RateLimited
-from jobfinder.discovery.hydrate import MAX_HYDRATE_ATTEMPTS, _hydrate_url, hydrate_posting
+from jobfinder.discovery.hydrate import MAX_HYDRATE_ATTEMPTS, fetch_url_for, hydrate_posting
 
 
 def _seed(db_session, url: str) -> Posting:
@@ -124,7 +124,7 @@ def test_hydrate_url_uses_linkedin_guest_endpoint() -> None:
         description_text="short",
         description_complete=False,
     )
-    assert _hydrate_url(linkedin_posting) == (
+    assert fetch_url_for(linkedin_posting.apply_url) == (
         "https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/4123456789"
     )
 
@@ -138,7 +138,7 @@ def test_hydrate_url_uses_linkedin_guest_endpoint() -> None:
         description_text="short",
         description_complete=False,
     )
-    assert _hydrate_url(other_posting) == "https://agg.test/go"
+    assert fetch_url_for(other_posting.apply_url) == "https://agg.test/go"
 
 
 @respx.mock

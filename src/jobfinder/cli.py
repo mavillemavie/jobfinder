@@ -143,6 +143,71 @@ def rescore(posting_id: int) -> None:
 
 
 @app.command()
+def add(
+    url: str,
+    text_file: str | None = typer.Option(
+        None, "--text-file", help="Job description text file, for pages that block reading"
+    ),
+) -> None:
+    """Add a job from its posting URL: shortlist it and score it."""
+    from pathlib import Path
+
+    from jobfinder import paths
+    from jobfinder.config import load_profile
+    from jobfinder.db.session import session_scope
+    from jobfinder.discovery.fetch import HttpClient
+    from jobfinder.discovery.manual import parse_url, save_manual
+    from jobfinder.llm import get_llm
+    from jobfinder.scoring.scorer import score_posting
+    from jobfinder.settings import get_settings
+    from jobfinder.tailoring.master_schema import load_master
+
+    paths.ensure_dirs()
+    llm = get_llm(get_settings())
+    try:
+        text = Path(text_file).read_text(encoding="utf-8") if text_file else None
+    except OSError as exc:
+        console.print(f"[red]cannot read {text_file}: {exc.strerror}[/red]")
+        raise typer.Exit(code=2) from exc
+    try:
+        parsed = parse_url(url, text=text, client=HttpClient(timeout=20.0, retries=1), llm=llm)
+    except ValueError as exc:
+        console.print(f"[red]{exc}[/red]")
+        raise typer.Exit(code=2) from exc
+    if parsed.fetch_error:
+        console.print(f"[yellow]could not read the page ({parsed.fetch_error})[/yellow]")
+    if not parsed.title or not parsed.company:
+        console.print(
+            "[red]could not read the job title and company[/red] — save the description to a "
+            "file and pass --text-file, or use the dashboard's Add job page"
+        )
+        raise typer.Exit(code=1)
+    with session_scope() as session:
+        profile = load_profile()
+        posting, created = save_manual(
+            session, parsed, match_threshold=profile.scoring.match_threshold
+        )
+        console.print(
+            f"#{posting.id}  {posting.title} · {posting.company.name} · "
+            f"{posting.location_raw or '—'}  (source: {parsed.origin})"
+        )
+        console.print("added to Shortlist" if created else "already in jobfinder — updated")
+        if parsed.thin:
+            console.print("[yellow]short description: score and tailoring will be weak[/yellow]")
+        if posting.latest_score is None:
+            try:
+                score = score_posting(
+                    session, posting, master=load_master(), llm=llm, profile=profile
+                )
+                console.print(f"fit {score.fit_score} → {posting.status}")
+            except Exception as exc:  # noqa: BLE001 — the posting is saved either way
+                console.print(
+                    f"[yellow]scoring failed: {exc}[/yellow] — "
+                    f"run `jobfinder rescore {posting.id}`"
+                )
+
+
+@app.command()
 def contacts(
     posting_id: int,
     show: bool = typer.Option(False, "--show", help="List stored contacts without running"),

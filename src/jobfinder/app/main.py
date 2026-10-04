@@ -48,10 +48,11 @@ def create_app(llm=None) -> FastAPI:  # noqa: ANN001
     def favicon() -> Response:
         return Response(status_code=204)
 
-    from jobfinder.app.routes import brief, inbox, jobs, pipeline, runs, settings
+    from jobfinder.app.routes import add, brief, inbox, jobs, pipeline, runs, settings
 
     for router in (
         inbox.router, jobs.router, pipeline.router, settings.router, runs.router, brief.router,
+        add.router,
     ):
         app.include_router(router)
     return app

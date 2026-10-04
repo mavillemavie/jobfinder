@@ -111,6 +111,10 @@ use, install the systemd unit (below) so it survives reboots.
   schedule, master résumé + cover letter editors, adapter health, month-to-date spend, *Run scan now*,
   *Send digest now*.
 - **Runs:** every scan and digest with its stats and adapter errors.
+- **Add job:** found a posting yourself? Paste its URL, check the title, company, location and
+  description it read (structured data first, then the fast LLM tier), *Save to Shortlist*. It is
+  scored in the background; then *Generate docs* on its Job page. If the site blocks reading the page
+  (login walls, Indeed, Workday), paste the job description into the optional box on the first step.
 
 The dashboard binds `dashboard.bind_host` (default loopback; `0.0.0.0` to reach it from a phone over
 Tailscale) and only answers clients in `dashboard.allowed_client_cidrs` (loopback + Tailscale
@@ -126,6 +130,7 @@ should point at.
 | `uv run jobfinder ingest [--resume F] [--cover F]` | parse `input/*.docx` into `master/resume.yaml` + `master/cover-letter.md` (strong LLM tier) |
 | `uv run jobfinder scan [--no-llm]` | discover → dedupe → prefilter → hydrate → LLM score → contact discovery for new matches |
 | `uv run jobfinder postings [--status S] [--limit N]` | list postings |
+| `uv run jobfinder add <url> [--text-file F]` | add a posting you found yourself: read it, put it on the Shortlist, score it (`--text-file` holds the description when the site blocks reading) |
 | `uv run jobfinder rescore <id>` | re-run fit scoring for one posting, bypassing the LLM cache |
 | `uv run jobfinder contacts <id> [--show]` | run the 8-step contact waterfall for one posting (or list stored contacts) |
 | `uv run jobfinder tailor <id> [--lang fr]` | tailored résumé + cover letter as .docx and .pdf, ATS score, truth check |

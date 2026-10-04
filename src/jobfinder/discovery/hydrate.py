@@ -29,19 +29,19 @@ def _cleared(prefilter_result: dict | None) -> dict:
     return out
 
 
-def _hydrate_url(posting: Posting) -> str:
-    """URL to fetch full text from for this posting.
+def fetch_url_for(url: str) -> str:
+    """URL to fetch a posting's full text from, given its apply/view URL.
 
     LinkedIn's public job-view page increasingly bounces guests to a login wall;
     the guest detail endpoint serves the same posting body without auth, keyed by
     the job id (the trailing digits of the view URL). `apply_url` still points at
     the view page — that's the link a human clicks — this only changes what we fetch.
     """
-    if _LINKEDIN_VIEW_MARKER in posting.apply_url:
-        match = _TRAILING_DIGITS.search(posting.apply_url)
+    if _LINKEDIN_VIEW_MARKER in url:
+        match = _TRAILING_DIGITS.search(url)
         if match:
             return f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{match.group(1)}"
-    return posting.apply_url
+    return url
 
 
 def hydrate_posting(session: Session, posting: Posting, client: HttpClient) -> bool:
@@ -62,7 +62,7 @@ def hydrate_posting(session: Session, posting: Posting, client: HttpClient) -> b
     """
     if posting.description_complete:
         return False
-    fetch_url = _hydrate_url(posting)
+    fetch_url = fetch_url_for(posting.apply_url)
     try:
         html = client.get_text(fetch_url)
     except (RateLimited, BudgetExceeded):

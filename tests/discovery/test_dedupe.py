@@ -172,3 +172,19 @@ def test_second_source_merge_does_not_overwrite_the_title(db_session) -> None:
     )
     p = db_session.scalar(select(Posting))
     assert p.title == "Data Analyst" and len(p.sources) == 2
+
+
+def test_upsert_one_returns_new_then_existing(db_session) -> None:
+    p1, created1 = dedupe.upsert_one(db_session, _raw(), max_age_days=14)
+    p2, created2 = dedupe.upsert_one(
+        db_session, _raw(source="linkedin_guest", sid="99"), max_age_days=14
+    )
+    assert created1 is True and created2 is False
+    assert p1.id is not None and p2.id == p1.id
+    assert len(p2.sources) == 2
+
+
+def test_upsert_one_counts_into_stats_when_given(db_session) -> None:
+    stats = dedupe.UpsertStats()
+    dedupe.upsert_one(db_session, _raw(), max_age_days=14, stats=stats)
+    assert stats.new == 1

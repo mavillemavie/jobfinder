@@ -31,5 +31,7 @@ def client(home, fake_llm, monkeypatch) -> TestClient:
 
     background.CONTACTS_IN_FLIGHT.clear()
     monkeypatch.setattr("jobfinder.app.routes.inbox.start_contacts_thread", lambda pid, llm: None)
+    background.SCORING_IN_FLIGHT.clear()
+    monkeypatch.setattr("jobfinder.app.routes.add.start_score_thread", lambda pid, llm: None)
     app = create_app(llm=fake_llm)
     return TestClient(app)

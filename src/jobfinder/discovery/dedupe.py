@@ -60,11 +60,22 @@ def _as_naive_utc(dt: datetime | None) -> datetime | None:
     return dt.astimezone(UTC).replace(tzinfo=None) if dt.tzinfo else dt
 
 
+def _cutoff(max_age_days: int) -> datetime:
+    return utcnow().replace(tzinfo=None) - timedelta(days=max_age_days)
+
+
+def upsert_one(
+    session: Session, raw: RawPosting, *, max_age_days: int, stats: UpsertStats | None = None
+) -> tuple[Posting, bool]:
+    """Upsert one raw posting; returns (posting, created). Flushes, never commits."""
+    return _upsert_one(session, raw, _cutoff(max_age_days), stats or UpsertStats())
+
+
 def upsert_raw_postings(
     session: Session, raws: list[RawPosting], *, max_age_days: int
 ) -> UpsertStats:
     stats = UpsertStats()
-    cutoff = utcnow().replace(tzinfo=None) - timedelta(days=max_age_days)
+    cutoff = _cutoff(max_age_days)
     for raw in raws:
         try:
             with session.begin_nested():
@@ -76,7 +87,9 @@ def upsert_raw_postings(
     return stats
 
 
-def _upsert_one(session: Session, raw: RawPosting, cutoff: datetime, stats: UpsertStats) -> None:
+def _upsert_one(
+    session: Session, raw: RawPosting, cutoff: datetime, stats: UpsertStats
+) -> tuple[Posting, bool]:
     ats = detect_ats(raw.apply_url) or detect_ats(raw.url)
     for link in raw.extra.get("apply_links", []):
         ats = ats or detect_ats(link)
@@ -145,7 +158,7 @@ def _upsert_one(session: Session, raw: RawPosting, cutoff: datetime, stats: Upse
             existing.language = detect_language(text)
         session.flush()
         stats.updated += 1
-        return
+        return existing, False
 
     posted = _as_naive_utc(raw.posted_at)
     posting = Posting(
@@ -185,3 +198,4 @@ def _upsert_one(session: Session, raw: RawPosting, cutoff: datetime, stats: Upse
     session.add(posting)
     session.flush()
     stats.new += 1
+    return posting, True

@@ -105,3 +105,45 @@ def start_contacts_thread(posting_id: int, llm=None) -> threading.Thread:  # noq
     )
     t.start()
     return t
+
+
+# Postings being scored from an "Add job" save, so a double submit does not score twice.
+SCORING_IN_FLIGHT: set[int] = set()
+_SCORING_LOCK = threading.Lock()
+
+
+def claim_scoring(posting_id: int) -> bool:
+    """True for the one caller that may start scoring this posting until the job finishes."""
+    with _SCORING_LOCK:
+        if posting_id in SCORING_IN_FLIGHT:
+            return False
+        SCORING_IN_FLIGHT.add(posting_id)
+        return True
+
+
+def run_score_job(posting_id: int, llm=None) -> None:  # noqa: ANN001
+    from jobfinder.db.models import Posting
+    from jobfinder.llm import get_llm
+    from jobfinder.scoring.scorer import score_posting
+    from jobfinder.tailoring.master_schema import load_master
+
+    try:
+        settings, profile = get_settings(), load_profile()
+        llm = llm or get_llm(settings)
+        with session_scope() as session:
+            posting = session.get(Posting, posting_id)
+            if posting is not None and posting.latest_score is None:
+                score_posting(session, posting, master=load_master(), llm=llm, profile=profile)
+    except Exception:  # noqa: BLE001 — the job page keeps its Re-score button
+        log.exception("background scoring failed for posting %s", posting_id)
+    finally:
+        SCORING_IN_FLIGHT.discard(posting_id)
+
+
+def start_score_thread(posting_id: int, llm=None) -> threading.Thread:  # noqa: ANN001
+    t = threading.Thread(
+        target=run_score_job, args=(posting_id, llm), name=f"jobfinder-score-{posting_id}",
+        daemon=True,
+    )
+    t.start()
+    return t

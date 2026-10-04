@@ -11,6 +11,7 @@
     <p><strong>Missing:</strong> {{ score.missing_requirements|join(', ') or 'none' }} · <strong>Seniority:</strong> {{ score.seniority_match }}</p>
     <p><strong>Eligibility:</strong> {% for k, v in score.eligibility.items() %}<span class="chip">{{ k }}: {{ v }}</span>{% endfor %}</p>
     {% if score.red_flags %}<p class="bad">Red flags: {{ score.red_flags|join('; ') }}</p>{% endif %}{% endif %}
+    {% if not score and p.prefilter_result and p.prefilter_result.get('manual') %}<p class="muted">Scoring… refresh in a minute. If nothing appears, use Re-score.</p>{% endif %}
     <form class="inline" hx-post="/postings/{{ p.id }}/rescore" hx-target="#rescored" hx-swap="innerHTML"><button>Re-score</button></form><span id="rescored"></span>
   </div>
   <div class="card" id="documents">{% include "_documents.html" %}</div>

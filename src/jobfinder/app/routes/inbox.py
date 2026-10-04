@@ -62,6 +62,22 @@ def shortlist_posting(session: Session, posting: Posting) -> None:
     _log_stage(session, posting, "shortlisted")
 
 
+def maybe_start_contacts(
+    session: Session, posting_id: int, profile: Profile, llm  # noqa: ANN001
+) -> bool:
+    """Start a background contact run for a freshly shortlisted posting when the profile asks
+    for it and none ran yet. Contacts cost credits: only what JF picks, in the background so
+    the click returns at once; the nightly catch-up covers a thread that never finished."""
+    if not profile.contacts.run_on_shortlist or posting_id in CONTACTS_IN_FLIGHT:
+        return False
+    has_run = session.scalar(select(ContactRun.id).where(ContactRun.posting_id == posting_id))
+    if has_run is not None:
+        return False
+    CONTACTS_IN_FLIGHT.add(posting_id)
+    start_contacts_thread(posting_id, llm)
+    return True
+
+
 def dismiss_posting(session: Session, posting: Posting, reason: str) -> int:
     """Dismiss the row and, per the reason's scope, its live twins (same company and title,
     or the whole company for bad_company). Returns how many twins were swept."""
@@ -113,14 +129,8 @@ def shortlist(
     shortlist_posting(session, p)
     session.commit()
     note = "shortlisted"
-    if profile.contacts.run_on_shortlist and posting_id not in CONTACTS_IN_FLIGHT:
-        has_run = session.scalar(select(ContactRun.id).where(ContactRun.posting_id == posting_id))
-        if has_run is None:
-            # Contacts cost credits: run them for what JF picks, in the background so the
-            # click returns at once. The nightly catch-up covers a thread that never finished.
-            CONTACTS_IN_FLIGHT.add(posting_id)
-            start_contacts_thread(posting_id, get_llm_dep(request))
-            note = "shortlisted · finding contact…"
+    if maybe_start_contacts(session, posting_id, profile, get_llm_dep(request)):
+        note = "shortlisted · finding contact…"
     return _row(request, p, note)
 
 
