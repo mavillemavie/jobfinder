@@ -12,7 +12,9 @@ MASTER = paths.repo_root() / "tests/fixtures/master/resume.yaml"
 
 
 def _setup(fake_review: dict | None) -> tuple[int, FakeLLM]:
-    (paths.master_dir() / "resume.yaml").write_text(MASTER.read_text(encoding="utf-8"))
+    (paths.master_dir() / "resume.yaml").write_text(
+        MASTER.read_text(encoding="utf-8"), encoding="utf-8"
+    )
     master = MasterResume.from_yaml(MASTER)
     draft = {
         "resume": master.model_dump(mode="json"), "cover_letter": "Dear team,\n\nHi.",
