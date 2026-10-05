@@ -45,3 +45,21 @@ def test_run_truth_check_combines_llm(home) -> None:
     assert rep["deterministic"] == [] and rep["llm"] == ["claims fluency in Spanish"]
     assert rep["ok"] is False
     assert llm.calls[0]["tier"] == "strong"
+
+
+def test_number_from_master_cover_letter_is_known() -> None:
+    master = MasterResume.from_yaml(FIXTURE)
+    tailored = master.model_copy(deep=True)
+    tailored.summary = "Supports a community of 350+ users."
+    assert "number not in master: 350" in deterministic_truth_check(tailored, master)
+    assert deterministic_truth_check(
+        tailored, master, known_text="I serve a community of 350+ users."
+    ) == []
+
+
+def test_llm_truth_check_sees_master_cover_letter(home) -> None:
+    master = MasterResume.from_yaml(FIXTURE)
+    llm = FakeLLM({"truth_check": {"unsupported_claims": []}})
+    run_truth_check(master, "Letter.", master, llm, master_cover="I founded a company in 2024.")
+    assert "MASTER COVER LETTER (truth" in llm.calls[0]["user"]
+    assert "I founded a company in 2024." in llm.calls[0]["user"]

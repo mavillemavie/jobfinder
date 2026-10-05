@@ -83,7 +83,8 @@ matches; 20–40 minutes the first time, capped by `scoring.max_llm_scored_per_r
     uv run jobfinder serve            # any OS, foreground — http://localhost:3838
 
 Inbox shows every match sorted by fit. From a Job page: *Generate docs* (tailored résumé + cover
-letter, .docx and .pdf, with a truth check against your master), *Find contact*, *Write drafts*,
+letter, .docx and .pdf, two pages, with a recruiter-review score and a truth check against your
+master), *Find contact*, *Write drafts*,
 *Compose in Gmail*.
 
 **6. Get the brief.** With `GMAIL_*` set:
@@ -187,9 +188,13 @@ and needs Git for Windows; run `claude` once from a terminal to log in.
   (`apollo 3, hunter 2, websearch 6`) and `contacts.monthly_usd_cap` (50) are enforced before every
   paid call; every match ends with at least a switchboard or a "manual lookup" row.
 - **Tailoring** (`jobfinder.tailoring`): one strong-tier call rewrites the résumé and cover letter
-  for the posting under a hard "never claim what the master doesn't" rule; a deterministic audit plus
-  an LLM audit flag anything unsupported (`needs_review`); rendering is single-column Calibri 10.5 with
-  real bullets; an ATS check scores structure + keyword coverage (`ready` needs ≥ 75 and a clean audit).
+  for the posting under a hard "never claim what the master doesn't" rule, then a recruiter-review
+  call scores the draft and revises it once under the same rules. A length budget in code (4 roles,
+  5/4/3/2 bullets, 3 skill groups / 15 items, 60-word summary) and a render-and-trim loop keep the
+  résumé to two pages; the cover letter must stay ≤ 350 words. A deterministic audit plus an LLM
+  audit (master résumé and master cover letter are the truth) flag anything unsupported. Rendering
+  is single-column, ATS-safe (Calibri / Helvetica, ruled headings, right-aligned dates). `ready`
+  needs a clean audit, ATS ≥ 75, ≤ 2 pages and ≤ 350 words; otherwise the Job page shows why it is held.
 - **App** (`jobfinder.app`): FastAPI + HTMX dashboard, APScheduler cron jobs (`scan.run_at`,
   `digest.send_at`, both in America/Montreal), Gmail-SMTP digest built from everything since the last
   successful digest.

@@ -63,8 +63,13 @@ def test_tailor_action_renders_documents(client, fake_llm) -> None:
         "change_log": ["x"], "keyword_coverage": {"matched": ["sql"], "missing": []}, "gaps": [],
     }
     fake_llm.responses["truth_check"] = {"unsupported_claims": []}
+    fake_llm.responses["review_documents"] = {
+        "score": 77, "critique": ["Lead with SQL"], "revised": fake_llm.responses["tailor_resume"],
+    }
     r = client.post(f"/jobs/{pid}/tailor")
     assert r.status_code == 200 and "Jordan-Test-Resume-AcmeLogistics.docx" in r.text
+    assert "Review 77/100" in r.text and "Lead with SQL" in r.text and "Held:" not in r.text
+    assert "Missing keywords:" in r.text  # read from the résumé row, not a cover letter
     assert "ready" in r.text
     with Session(get_engine()) as s:
         doc = s.query(Document).filter_by(posting_id=pid, format="docx", kind="resume").one()
@@ -177,3 +182,19 @@ def test_closing_as_rejected_dismisses_title_twins_and_leaves_the_inbox(client) 
     # A match whose pipeline is closed is no longer an actionable inbox row.
     assert "Senior Data Analyst" not in client.get("/").text
     assert "Senior Data Analyst" in client.get("/?status=all").text
+
+
+def test_held_documents_show_reasons(client) -> None:
+    pid = _seed()
+    with Session(get_engine()) as s:
+        s.add(Document(
+            posting_id=pid, kind="resume", format="pdf", path="/x/r.pdf", ats_score=70,
+            status="needs_review", truth_check={"ok": True, "deterministic": [], "llm": []},
+            ats_report={
+                "keyword_missing": [], "gaps": [], "pages": 3, "hold_reasons": ["pages", "ats"],
+                "review": {"error": "LLMError: timeout"},
+            },
+        ))
+        s.commit()
+    r = client.get(f"/jobs/{pid}")
+    assert "Held: pages, ats" in r.text and "Review skipped: LLMError: timeout" in r.text

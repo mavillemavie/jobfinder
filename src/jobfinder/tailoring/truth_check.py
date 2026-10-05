@@ -25,7 +25,11 @@ def _numbers(text: str) -> set[str]:
     return {m.group(1).replace(",", "").replace(" ", "").lower() for m in _NUM.finditer(text)}
 
 
-def deterministic_truth_check(tailored: MasterResume, master: MasterResume) -> list[str]:
+def deterministic_truth_check(
+    tailored: MasterResume, master: MasterResume, known_text: str = ""
+) -> list[str]:
+    """`known_text` is other truth from the candidate (the master cover letter): its numbers
+    count as known."""
     findings: list[str] = []
     mtext = _master_text(master)
     m_companies = {_norm(e.company) for e in master.experience}
@@ -63,7 +67,7 @@ def deterministic_truth_check(tailored: MasterResume, master: MasterResume) -> l
         + [b for e in tailored.experience for b in e.bullets]
         + [p.description or "" for p in tailored.projects]
     )
-    master_nums = _numbers(master.model_dump_json())
+    master_nums = _numbers(master.model_dump_json()) | _numbers(known_text)
     for num in sorted(_numbers(prose) - master_nums):
         findings.append(f"number not in master: {num}")
     return findings
@@ -76,12 +80,13 @@ def _dump(m: MasterResume) -> str:
 
 
 def llm_truth_check(
-    tailored: MasterResume, cover_letter: str, master: MasterResume, llm: LLMProvider
+    tailored: MasterResume, cover_letter: str, master: MasterResume, llm: LLMProvider,
+    master_cover: str = "",
 ) -> list[str]:
-    user = (
-        f"MASTER RESUME (truth):\n{_dump(master)}\n\nTAILORED RESUME:\n{_dump(tailored)}\n\n"
-        f"COVER LETTER:\n{cover_letter}"
-    )
+    user = f"MASTER RESUME (truth):\n{_dump(master)}\n\n"
+    if master_cover.strip():
+        user += f"MASTER COVER LETTER (truth, the candidate's own words):\n{master_cover}\n\n"
+    user += f"TAILORED RESUME:\n{_dump(tailored)}\n\nCOVER LETTER:\n{cover_letter}"
     data = llm.complete_json(
         task="truth_check", system=load_prompt("truth_check"), user=user,
         schema=load_schema("truth_check"), tier="strong",
@@ -90,8 +95,9 @@ def llm_truth_check(
 
 
 def run_truth_check(
-    tailored: MasterResume, cover_letter: str, master: MasterResume, llm: LLMProvider
+    tailored: MasterResume, cover_letter: str, master: MasterResume, llm: LLMProvider,
+    master_cover: str = "",
 ) -> dict:
-    det = deterministic_truth_check(tailored, master)
-    via_llm = llm_truth_check(tailored, cover_letter, master, llm)
+    det = deterministic_truth_check(tailored, master, known_text=master_cover)
+    via_llm = llm_truth_check(tailored, cover_letter, master, llm, master_cover=master_cover)
     return {"deterministic": det, "llm": via_llm, "ok": not det and not via_llm}

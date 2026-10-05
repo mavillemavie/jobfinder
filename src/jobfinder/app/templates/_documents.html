@@ -3,8 +3,12 @@
 {% for d in documents %}<tr><td>{{ d.kind }}</td><td>{{ d.format }}</td><td>{{ d.language }}</td>
 <td class="{{ 'ok' if d.status == 'ready' else 'warn' }}">{{ d.status }}</td><td>{{ d.ats_score or '' }}</td>
 <td><a href="/jobs/{{ p.id }}/files/{{ d.id }}">{{ d.path.rsplit('/', 1)[-1] }}</a></td></tr>{% endfor %}</table>
-{% set r = documents[0] %}
+{% set r = documents|selectattr('kind', 'equalto', 'resume')|first or documents[0] %}
 {% if r.ats_report %}<p class="muted">Missing keywords: {{ r.ats_report.keyword_missing|join(', ') or 'none' }} · gaps: {{ r.ats_report.gaps|join(', ') or 'none' }} · pages: {{ r.ats_report.pages }}</p>{% endif %}
+{% set rv = r.ats_report.review if r.ats_report else None %}
+{% if rv and rv.score is defined %}<p class="muted">Review {{ rv.score }}/100</p>{% if rv.critique %}<details><summary>Recruiter notes</summary><ul>{% for c in rv.critique %}<li>{{ c }}</li>{% endfor %}</ul></details>{% endif %}
+{% elif rv and rv.error %}<p class="muted">Review skipped: {{ rv.error }}</p>{% endif %}
+{% if r.ats_report and r.ats_report.hold_reasons %}<p class="warn">Held: {{ r.ats_report.hold_reasons|join(', ') }}</p>{% endif %}
 {% if r.truth_check and not r.truth_check.ok %}<p class="warn">Truth check: {{ (r.truth_check.deterministic + r.truth_check.llm)|join('; ') }}</p>{% endif %}
 {% if r.change_log %}<details><summary>Change log</summary><ul>{% for c in r.change_log %}<li>{{ c }}</li>{% endfor %}</ul></details>{% endif %}
 {% else %}<p class="muted">No documents yet.</p>{% endif %}

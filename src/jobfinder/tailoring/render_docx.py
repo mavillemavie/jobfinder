@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 from docx import Document as DocxDocument
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+from docx.shared import Inches, Pt, RGBColor
 
 from jobfinder.tailoring.master_schema import MasterResume
 
@@ -22,6 +25,25 @@ HEADINGS: dict[str, dict[str, str]] = {
 }
 BODY_FONT = "Calibri"
 BODY_PT = 10.5
+MARGIN_IN = 0.7
+TEXT_WIDTH_IN = 8.5 - 2 * MARGIN_IN
+MUTED = RGBColor(0x55, 0x55, 0x55)
+_MONTHS = {
+    "en": [
+        "January", "February", "March", "April", "May", "June", "July", "August",
+        "September", "October", "November", "December",
+    ],
+    "fr": [
+        "janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
+        "septembre", "octobre", "novembre", "décembre",
+    ],
+}
+
+
+def letter_date(when: date, lang: str) -> str:
+    if lang == "fr":
+        return f"{when.day} {_MONTHS['fr'][when.month - 1]} {when.year}"
+    return f"{_MONTHS['en'][when.month - 1]} {when.day}, {when.year}"
 
 
 def _new_document() -> DocxDocument:
@@ -30,18 +52,38 @@ def _new_document() -> DocxDocument:
     normal.font.name = BODY_FONT
     normal.font.size = Pt(BODY_PT)
     for section in doc.sections:
-        section.top_margin = section.bottom_margin = Pt(54)
-        section.left_margin = section.right_margin = Pt(58)
+        section.top_margin = section.bottom_margin = Inches(MARGIN_IN)
+        section.left_margin = section.right_margin = Inches(MARGIN_IN)
     return doc
+
+
+_PBDR_SUCCESSORS = (
+    "w:shd", "w:tabs", "w:suppressAutoHyphens", "w:kinsoku", "w:wordWrap", "w:overflowPunct",
+    "w:topLinePunct", "w:autoSpaceDE", "w:autoSpaceDN", "w:bidi", "w:adjustRightInd",
+    "w:snapToGrid", "w:spacing", "w:ind", "w:contextualSpacing", "w:mirrorIndents",
+    "w:suppressOverlap", "w:jc", "w:textDirection", "w:textAlignment", "w:textboxTightWrap",
+    "w:outlineLvl", "w:divId", "w:cnfStyle", "w:rPr", "w:sectPr", "w:pPrChange",
+)
+
+
+def _bottom_rule(paragraph) -> None:
+    bdr = OxmlElement("w:pBdr")
+    bottom = OxmlElement("w:bottom")
+    for k, v in (("w:val", "single"), ("w:sz", "4"), ("w:space", "1"), ("w:color", "888888")):
+        bottom.set(qn(k), v)
+    bdr.append(bottom)
+    # schema order: pBdr comes before shd, tabs, spacing, ind, jc … (Word is strict about it)
+    paragraph._p.get_or_add_pPr().insert_element_before(bdr, *_PBDR_SUCCESSORS)
 
 
 def _heading(doc: DocxDocument, text: str) -> None:
     p = doc.add_paragraph()
-    p.paragraph_format.space_before = Pt(10)
-    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.space_before = Pt(8)
+    p.paragraph_format.space_after = Pt(3)
     run = p.add_run(text)
     run.bold = True
-    run.font.size = Pt(11)
+    run.font.size = Pt(10.5)
+    _bottom_rule(p)
 
 
 def _contact_line(resume: MasterResume) -> str:
@@ -54,8 +96,16 @@ def _name_block(doc: DocxDocument, resume: MasterResume) -> None:
     p.alignment = WD_ALIGN_PARAGRAPH.LEFT
     run = p.add_run(resume.contact.name)
     run.bold = True
-    run.font.size = Pt(16)
-    doc.add_paragraph(_contact_line(resume))
+    run.font.size = Pt(18)
+    contact = doc.add_paragraph().add_run(_contact_line(resume))
+    contact.font.size = Pt(9.5)
+    contact.font.color.rgb = MUTED
+
+
+def _bullet(doc: DocxDocument, text: str):
+    p = doc.add_paragraph(text, style="List Bullet")
+    p.paragraph_format.space_after = Pt(2)
+    return p
 
 
 def _dates(start: str | None, end: str | None) -> str:
@@ -80,13 +130,24 @@ def render_resume_docx(resume: MasterResume, path: Path, lang: str = "en") -> Pa
         _heading(doc, h["experience"])
         for e in resume.experience:
             p = doc.add_paragraph()
-            r = p.add_run(f"{e.title} — {e.company}")
-            r.bold = True
-            meta = " | ".join(x for x in [e.location, _dates(e.start, e.end)] if x)
-            if meta:
-                p.add_run(f"  ({meta})")
+            p.paragraph_format.space_before = Pt(4)
+            p.paragraph_format.space_after = Pt(0)
+            p.paragraph_format.tab_stops.add_tab_stop(
+                Inches(TEXT_WIDTH_IN), WD_TAB_ALIGNMENT.RIGHT
+            )
+            p.add_run(f"{e.title} — {e.company}").bold = True
+            dates = _dates(e.start, e.end)
+            if dates:
+                p.add_run(f"\t{dates}")
+            if e.location:
+                lp = doc.add_paragraph()
+                lp.paragraph_format.space_after = Pt(1)
+                loc = lp.add_run(e.location)
+                loc.italic = True
+                loc.font.size = Pt(9.5)
+                loc.font.color.rgb = MUTED
             for b in e.bullets:
-                doc.add_paragraph(b, style="List Bullet")
+                _bullet(doc, b)
     if resume.education:
         _heading(doc, h["education"])
         for ed in resume.education:
@@ -95,7 +156,7 @@ def render_resume_docx(resume: MasterResume, path: Path, lang: str = "en") -> Pa
     if resume.certifications:
         _heading(doc, h["certifications"])
         for c in resume.certifications:
-            doc.add_paragraph(c, style="List Bullet")
+            _bullet(doc, c)
     if resume.languages:
         _heading(doc, h["languages"])
         doc.add_paragraph(
@@ -104,7 +165,7 @@ def render_resume_docx(resume: MasterResume, path: Path, lang: str = "en") -> Pa
     if resume.projects:
         _heading(doc, h["projects"])
         for pr in resume.projects:
-            p = doc.add_paragraph(style="List Bullet")
+            p = _bullet(doc, "")
             r = p.add_run(f"{pr.name}: ")
             r.bold = True
             p.add_run(pr.description or "")
@@ -113,12 +174,18 @@ def render_resume_docx(resume: MasterResume, path: Path, lang: str = "en") -> Pa
     return path
 
 
-def render_cover_letter_docx(text: str, resume: MasterResume, path: Path) -> Path:
+def render_cover_letter_docx(
+    text: str, resume: MasterResume, path: Path, lang: str = "en", when: date | None = None
+) -> Path:
     doc = _new_document()
     _name_block(doc, resume)
-    doc.add_paragraph("")
+    dated = doc.add_paragraph(letter_date(when or date.today(), lang))
+    dated.paragraph_format.space_before = Pt(12)
+    dated.paragraph_format.space_after = Pt(10)
     for para in [p.strip() for p in text.split("\n\n") if p.strip()]:
-        doc.add_paragraph(para)
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(8)
+        p.add_run(para).font.size = Pt(11)
     path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(str(path))
     return path

@@ -260,6 +260,8 @@ def tailor(
     lang: str | None = typer.Option(None, help="en | fr (default: follow posting)"),
 ) -> None:
     """Generate the tailored resume + cover letter (.docx + .pdf) for a posting."""
+    from rich.markup import escape
+
     from jobfinder.config import load_profile
     from jobfinder.db.session import session_scope
     from jobfinder.llm import get_llm
@@ -277,10 +279,21 @@ def tailor(
         console.print(
             f"ATS score {docs[0].ats_score} | missing keywords: {missing}", soft_wrap=True
         )
+        review = rep.get("review") or {}
+        if "score" in review:
+            console.print(f"review {review['score']}/100", soft_wrap=True)
+            for c in review.get("critique", []):
+                console.print(f"  - {escape(c)}", soft_wrap=True)
+        elif review.get("error"):
+            console.print(
+                f"[yellow]review skipped:[/yellow] {escape(review['error'])}", soft_wrap=True
+            )
+        if rep.get("hold_reasons"):
+            console.print(f"[yellow]held:[/yellow] {', '.join(rep['hold_reasons'])}")
         if not docs[0].truth_check["ok"]:
             console.print("[yellow]truth check findings:[/yellow]")
             for f in docs[0].truth_check["deterministic"] + docs[0].truth_check["llm"]:
-                console.print(f"  - {f}", soft_wrap=True)
+                console.print(f"  - {escape(f)}", soft_wrap=True)
 
 
 @app.command()

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from jobfinder.llm.base import LLMProvider, load_prompt, load_schema
 from jobfinder.tailoring.master_schema import (
     MasterResume,
@@ -14,9 +16,22 @@ _COVER_SYSTEM = (
 )
 
 
+def _unwrap(text: str) -> str:
+    """A cover letter saved as a provider's raw JSON ({"text": ...}) is read as its text."""
+    s = text.strip()
+    if s.startswith("{"):
+        try:
+            data = json.loads(s)
+        except ValueError:
+            return text
+        if isinstance(data, dict) and isinstance(data.get("text"), str):
+            return data["text"].strip() + "\n"
+    return text
+
+
 def load_cover_letter(lang: str = "en") -> str:
     path = cover_letter_path(lang)
-    return path.read_text(encoding="utf-8") if path.exists() else ""
+    return _unwrap(path.read_text(encoding="utf-8")) if path.exists() else ""
 
 
 def ensure_master(lang: str, llm: LLMProvider) -> MasterResume:
@@ -37,5 +52,7 @@ def ensure_master(lang: str, llm: LLMProvider) -> MasterResume:
             task="translate_text", system=_COVER_SYSTEM, user=en_cover,
             schema=load_schema("translate_text"), tier="strong", language=lang,
         )
-        cover_letter_path(lang).write_text(out["text"].strip() + "\n", encoding="utf-8")
+        cover_letter_path(lang).write_text(
+            _unwrap(out["text"]).strip() + "\n", encoding="utf-8"
+        )
     return translated
