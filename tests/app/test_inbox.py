@@ -162,3 +162,70 @@ def test_shortlist_trigger_can_be_turned_off(client, monkeypatch) -> None:
     a, _b = _seed()
     r = client.post(f"/postings/{a}/shortlist")
     assert "shortlisted" in r.text and started == []
+
+
+def _seed_seen() -> None:
+    """Two matches that disagree on score and age: the older one scores higher."""
+    from datetime import UTC, datetime, timedelta
+
+    now = datetime.now(UTC)
+    with Session(get_engine()) as s:
+        co = Company(name="Acme", normalized_name="acme")
+        for i, (title, score, seen) in enumerate([
+            ("Old High", 90, now - timedelta(days=3)), ("New Low", 60, now),
+        ]):
+            p = Posting(
+                company=co, title=title, normalized_title="data analyst", apply_url="u",
+                dedupe_key=f"s{i}", content_hash=f"sh{i}", status="match", city="Montreal",
+                country="CA", description_text="SQL", first_seen_at=seen,
+                prefilter_result={"passed": True, "reason": "ok", "location_key": "montreal"},
+            )
+            p.scores.append(
+                Score(model="fake", fit_score=score, reasons=["r"], one_line_summary="s")
+            )
+            p.pipeline = Pipeline(stage="new")
+            s.add(p)
+        s.commit()
+
+
+def test_inbox_sorts_by_seen_and_score_in_both_directions(client) -> None:
+    _seed_seen()
+    t = client.get("/").text  # default: score, highest first
+    assert t.index("Old High") < t.index("New Low")
+    t = client.get("/?sort=seen").text  # newest first
+    assert t.index("New Low") < t.index("Old High")
+    t = client.get("/?sort=seen&dir=asc").text  # oldest first
+    assert t.index("Old High") < t.index("New Low")
+    t = client.get("/?sort=score&dir=asc").text  # lowest first
+    assert t.index("New Low") < t.index("Old High")
+
+
+def test_inbox_unknown_sort_falls_back_to_default(client) -> None:
+    _seed_seen()
+    r = client.get("/?sort=bogus&dir=sideways")
+    assert r.status_code == 200
+    assert r.text.index("Old High") < r.text.index("New Low")
+
+
+def test_inbox_sort_headers_toggle_and_keep_filters(client) -> None:
+    _seed_seen()
+    t = client.get("/?status=match&min_score=50&sort=seen").text
+    # the active column's link flips direction, the other column starts descending
+    assert "sort=seen&amp;dir=asc" in t and "sort=score&amp;dir=desc" in t
+    assert t.count("min_score=50") >= 2  # both header links carry the filters
+    # re-filtering keeps the chosen sort
+    assert 'name="sort" value="seen"' in t and 'name="dir" value="desc"' in t
+
+
+def test_inbox_empty_min_score_is_no_minimum(client) -> None:
+    _seed_seen()
+    r = client.get("/?status=match&min_score=&location=&q=")  # the filter form with an empty box
+    assert r.status_code == 200
+    assert "Old High" in r.text and "New Low" in r.text
+
+
+def test_inbox_sort_links_omit_empty_filters(client) -> None:
+    _seed_seen()
+    t = client.get("/?sort=seen").text
+    assert "min_score=&amp;" not in t and "location=&amp;" not in t and "q=&amp;" not in t
+    assert "/?status=match&amp;sort=score&amp;dir=desc" in t

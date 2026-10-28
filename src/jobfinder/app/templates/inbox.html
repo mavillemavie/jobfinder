@@ -6,10 +6,16 @@
   <input type="number" name="min_score" placeholder="min score" value="{{ min_score or '' }}" style="width:110px">
   <select name="location"><option value="">any location</option>{% for l in locations %}<option value="{{ l }}" {% if l == location %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
   <input type="text" name="q" placeholder="title contains" value="{{ q or '' }}">
+  <input type="hidden" name="sort" value="{{ sort }}"><input type="hidden" name="dir" value="{{ direction }}">
   <button class="primary">Filter</button>
 </form>
+{% set mark = ' ▼' if direction == 'desc' else ' ▲' %}
 <table>
-<thead><tr><th>Score</th><th>Title / Company</th><th>Where</th><th>Seen</th><th>Why</th><th>Actions</th></tr></thead>
+<thead><tr>
+<th><a href="{{ sort_links.score }}" title="Sort by score">Score{% if sort == 'score' %}{{ mark }}{% endif %}</a></th>
+<th>Title / Company</th><th>Where</th>
+<th><a href="{{ sort_links.seen }}" title="Sort by first seen">Seen{% if sort == 'seen' %}{{ mark }}{% endif %}</a></th>
+<th>Why</th><th>Actions</th></tr></thead>
 <tbody>
 {% for p in rows %}{% include "_posting_row.html" %}{% endfor %}
 </tbody></table>

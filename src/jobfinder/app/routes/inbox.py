@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, Request
+from urllib.parse import urlencode
+
+from fastapi import APIRouter, Depends, Form, Query, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -14,10 +16,61 @@ router = APIRouter()
 DISMISS_REASONS = [
     "wrong_title", "wrong_location", "too_senior", "too_junior", "bad_company", "other",
 ]
+SORTS = ("score", "seen")
+
+
+def sort_rows(rows: list[Posting], sort: str = "score", direction: str = "desc") -> None:
+    """Order in place by fit score or by first-seen time. Unknown values fall back to the
+    default (score, highest first). Ties on score always show the newest posting first."""
+    sort = sort if sort in SORTS else "score"
+    desc = direction != "asc"
+
+    def score(p: Posting) -> int:
+        return p.latest_score.fit_score if p.latest_score else -1
+
+    def seen(p: Posting) -> float:
+        return p.first_seen_at.timestamp()
+
+    if sort == "seen":
+        rows.sort(key=lambda p: (seen(p), score(p)), reverse=desc)
+    else:
+        rows.sort(key=lambda p: (score(p) if desc else -score(p), seen(p)), reverse=True)
+
+
+def sort_links(
+    status: str, min_score: int | None, location: str | None, q: str | None,
+    sort: str, direction: str,
+) -> dict[str, str]:
+    """Header links: the active column flips direction, the other one starts descending
+    (highest score / newest first); every link carries the current filters."""
+    base: dict[str, str | int] = {"status": status}
+    if min_score is not None:
+        base["min_score"] = min_score
+    if location:
+        base["location"] = location
+    if q:
+        base["q"] = q
+    out = {}
+    for col in SORTS:
+        if col == sort:
+            d = "asc" if direction != "asc" else "desc"
+        else:
+            d = "desc"
+        out[col] = "/?" + urlencode({**base, "sort": col, "dir": d})
+    return out
+
+
+def _int_or_none(value: str | None) -> int | None:
+    """An empty or non-numeric query value reads as "not set"."""
+    if value is None:
+        return None
+    value = value.strip()
+    return int(value) if value.lstrip("-").isdigit() else None
 
 
 def inbox_query(
-    session: Session, status: str, min_score: int | None, location: str | None, q: str | None
+    session: Session, status: str, min_score: int | None, location: str | None, q: str | None,
+    sort: str = "score", direction: str = "desc",
 ) -> list[Posting]:
     stmt = select(Posting).options(
         selectinload(Posting.scores), selectinload(Posting.company), selectinload(Posting.pipeline)
@@ -38,12 +91,7 @@ def inbox_query(
             p for p in rows
             if p.latest_score is not None and p.latest_score.fit_score >= min_score
         ]
-    rows.sort(
-        key=lambda p: (
-            -(p.latest_score.fit_score if p.latest_score else -1),
-            -p.first_seen_at.timestamp(),
-        )
-    )
+    sort_rows(rows, sort, direction)
     return rows
 
 
@@ -104,16 +152,23 @@ def _row(request: Request, posting: Posting, note: str = ""):  # noqa: ANN202
 def inbox(
     request: Request,
     status: str = "match",
-    min_score: int | None = None,
+    min_score: str | None = None,
     location: str | None = None,
     q: str | None = None,
+    sort: str = "score",
+    direction: str = Query("desc", alias="dir"),
     session: Session = Depends(db_session),
     profile: Profile = Depends(current_profile),
 ):  # noqa: ANN201
-    rows = inbox_query(session, status, min_score, location, q)
+    # The filter form submits an empty box as min_score= ; that means "no minimum", not 422.
+    min_score = _int_or_none(min_score)
+    sort = sort if sort in SORTS else "score"
+    direction = "asc" if direction == "asc" else "desc"
+    rows = inbox_query(session, status, min_score, location, q, sort, direction)
     return templates.TemplateResponse(request, "inbox.html", {
         "active": "inbox", "rows": rows, "status": status, "min_score": min_score,
-        "location": location, "q": q,
+        "location": location, "q": q, "sort": sort, "direction": direction,
+        "sort_links": sort_links(status, min_score, location, q, sort, direction),
         "locations": [loc.key for loc in profile.enabled_locations()], "reasons": DISMISS_REASONS,
     })
 
