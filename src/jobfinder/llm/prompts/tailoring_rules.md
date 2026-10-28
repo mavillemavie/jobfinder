@@ -16,6 +16,9 @@ Absolute rules (shared by tailoring and review):
 - Keep the resume tight: at most 4 roles (most relevant first), 5/4/3/2 bullets for roles 1-4, at
   most 3 skill groups and 15 skill items, a summary of at most 60 words. An automated budget cuts
   anything beyond these from the end, so put the strongest material first.
+- Projects: when the resume keeps a projects section, every master project marked `priority: true`
+  stays in it and comes first, in master order; the other projects follow by relevance (the budget
+  keeps at most 2). Omit `priority` from your output, it is a master flag, not résumé content.
 - `cover_letter`: aim for 280-320 words (an automated check holds anything over 350; word counts
   run long in French), in the requested language, addressed to the hiring team at the
   company by name, naming the role, with two concrete proof points taken from the master, in the same

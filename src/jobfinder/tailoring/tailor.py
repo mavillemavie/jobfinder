@@ -89,7 +89,7 @@ def tailor_posting(
         TailoredOutput.model_validate(data), master=master, master_cover=cover_ref,
         posting_block="POSTING\n" + prompt.split("\nPOSTING\n", 1)[-1], lang=lang, llm=llm,
     )
-    resume, cuts = apply_budget(tailored.resume)
+    resume, cuts = apply_budget(tailored.resume, master=master)
     resume.contact = master.contact  # contact block is never rewritten
 
     out_dir = output_dir_for(posting)

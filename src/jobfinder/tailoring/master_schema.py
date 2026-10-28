@@ -54,6 +54,8 @@ class Project(BaseModel):
     name: str
     description: str | None = None
     tags: list[str] = Field(default_factory=list)
+    # kept and listed first whenever the tailored résumé has a projects section (see budget)
+    priority: bool = False
 
 
 class MasterResume(BaseModel):

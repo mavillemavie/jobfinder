@@ -178,3 +178,20 @@ def test_snapshot_released_before_llm_calls(home, db_session, monkeypatch) -> No
     llm = FakeLLM({"tailor_resume": _tailor, "truth_check": {"unsupported_claims": []}})
     tailor_posting(db_session, _seed(db_session).id, llm=llm, profile=load_profile())
     assert events[:2] == ["release", "tailor_resume"]
+
+
+def test_priority_projects_survive_tailoring(home, db_session) -> None:
+    master_text = FIXTURE.read_text().replace("projects: []\n", "") + (
+        "projects:\n"
+        "  - name: Side Tool\n    description: a tool\n"
+        "  - name: Flagship\n    description: the flagship\n    priority: true\n"
+    )
+    (paths.master_dir() / "resume.yaml").write_text(master_text)
+    (paths.master_dir() / "cover-letter.md").write_text("Dear Hiring Manager,\n\nGeneral letter.\n")
+    master = MasterResume.from_yaml(paths.master_dir() / "resume.yaml")
+    out = _tailored(master)
+    out["resume"]["projects"] = [{"name": "Side Tool", "description": "a tool"}]  # Flagship dropped
+    llm = FakeLLM({"tailor_resume": out, "truth_check": {"unsupported_claims": []}})
+    docs = tailor_posting(db_session, _seed(db_session).id, llm=llm, profile=load_profile())
+    text = docx_text(Path(next(d for d in docs if d.format == "docx").path))
+    assert text.index("Flagship") < text.index("Side Tool")

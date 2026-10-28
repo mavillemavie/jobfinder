@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from jobfinder.tailoring.master_schema import MasterResume
+from jobfinder.tailoring.master_schema import MasterResume, Project
 from jobfinder.tailoring.render_pdf import pdf_pages, render_resume_pdf
 
 MAX_ROLES = 4
@@ -34,11 +34,36 @@ def _trim_summary(text: str) -> str:
     return " ".join(kept)
 
 
-def apply_budget(resume: MasterResume) -> tuple[MasterResume, list[str]]:
+def _key(name: str) -> str:
+    return " ".join(name.lower().split())
+
+
+def pin_priority_projects(projects: list[Project], master: MasterResume) -> list[Project]:
+    """The master's `priority: true` projects first, in master order, then the rest in the
+    LLM's order. A priority project the LLM dropped comes back with the master's own wording;
+    one it kept stays in the tailored wording. An empty section stays empty: the LLM decided
+    the résumé has no room for projects at all."""
+    if not projects:
+        return projects
+    pinned = [p for p in master.projects if p.priority]
+    if not pinned:
+        return projects
+    tailored = {_key(p.name): p for p in projects}
+    head = [tailored.get(_key(p.name)) or p.model_copy(deep=True) for p in pinned]
+    pinned_keys = {_key(p.name) for p in pinned}
+    return head + [p for p in projects if _key(p.name) not in pinned_keys]
+
+
+def apply_budget(
+    resume: MasterResume, master: MasterResume | None = None
+) -> tuple[MasterResume, list[str]]:
     """Section caps in code (the prompt's 'two pages' was ignored 15/15). The LLM's order is
-    taken as relevance order: later roles, bullets, items and entries are cut first."""
+    taken as relevance order: later roles, bullets, items and entries are cut first. With the
+    master given, its priority projects are pinned to the front before the projects cap."""
     r = resume.model_copy(deep=True)
     cuts: list[str] = []
+    if master is not None:
+        r.projects = pin_priority_projects(r.projects, master)
     if len(r.experience) > MAX_ROLES:
         cuts.append(f"roles: kept {MAX_ROLES} of {len(r.experience)}")
         r.experience = r.experience[:MAX_ROLES]

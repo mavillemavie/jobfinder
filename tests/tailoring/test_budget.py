@@ -103,3 +103,69 @@ def test_single_long_sentence_logged_honestly() -> None:
     out, cuts = apply_budget(r)
     assert out.summary == r.summary
     assert "summary: over budget (one sentence, 70 words)" in cuts
+
+
+def _master_with_priority() -> MasterResume:
+    m = big_resume(roles=1, bullets=1)
+    m.projects = [
+        Project(name="Alpha", description="master alpha"),
+        Project(name="Beta", description="master beta", priority=True),
+        Project(name="Gamma", description="master gamma"),
+        Project(name="Delta", description="master delta", priority=True),
+    ]
+    return m
+
+
+def test_priority_projects_come_first_and_survive_the_cap() -> None:
+    master = _master_with_priority()
+    tailored = master.model_copy(deep=True)
+    # the LLM kept three in its own order, reworded Beta and dropped Delta
+    tailored.projects = [
+        Project(name="Alpha", description="llm alpha"),
+        Project(name="Gamma", description="llm gamma"),
+        Project(name="beta ", description="llm beta"),
+    ]
+    out, cuts = apply_budget(tailored, master=master)
+    assert [p.name for p in out.projects] == ["beta ", "Delta"]
+    assert out.projects[0].description == "llm beta"  # the tailored wording is kept
+    assert out.projects[1].description == "master delta"  # the dropped one comes back verbatim
+    assert "projects: kept 2 of 4" in cuts
+
+
+def test_priority_projects_keep_master_order_then_llm_order() -> None:
+    master = _master_with_priority()
+    tailored = master.model_copy(deep=True)
+    tailored.projects = [Project(name="Delta"), Project(name="Gamma"), Project(name="Beta")]
+    budget_cap = budget.MAX_PROJECTS
+    budget.MAX_PROJECTS = 4
+    try:
+        out, cuts = apply_budget(tailored, master=master)
+    finally:
+        budget.MAX_PROJECTS = budget_cap
+    assert [p.name for p in out.projects] == ["Beta", "Delta", "Gamma"]
+    assert not any(c.startswith("projects") for c in cuts)
+
+
+def test_no_priority_projects_means_llm_order() -> None:
+    master = _master_with_priority()
+    for p in master.projects:
+        p.priority = False
+    tailored = master.model_copy(deep=True)
+    tailored.projects = [Project(name="Gamma"), Project(name="Alpha")]
+    out, _ = apply_budget(tailored, master=master)
+    assert [p.name for p in out.projects] == ["Gamma", "Alpha"]
+
+
+def test_priority_projects_are_not_added_to_an_empty_section() -> None:
+    # a résumé the LLM built without a projects section stays without one
+    master = _master_with_priority()
+    tailored = master.model_copy(deep=True)
+    tailored.projects = []
+    out, _ = apply_budget(tailored, master=master)
+    assert out.projects == []
+
+
+def test_tailoring_rules_explain_priority_projects() -> None:
+    from jobfinder.llm.base import load_prompt
+
+    assert "priority" in load_prompt("tailoring_rules")
